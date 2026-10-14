@@ -13,8 +13,11 @@ sin conexión.
 - **Reproductor**: la tablatura en una línea que avanza con la música (o en páginas), solo tab o tab con
   partitura, y debajo un mapa de la canción con lo denso que es cada compás; un clic salta a ese compás.
   Interruptores de metrónomo, cuenta atrás, bucle y «silenciar mi pista» para tocarla tú sobre la banda.
-- **Consola**: tempo del 25 % al 150 % y mezclador por pista (ver, silenciar, solo, volumen).
-- **Bucles**: en la tarjeta de secciones (una sección, o un rango de compases) o arrastrando sobre la tablatura.
+- **Consola**: tempo del 25 % al 150 % e instrumentos: para cada uno, si se ve en la tablatura, si suena,
+  solo y volumen.
+- **Tema**: Claro, Oscuro o Sistema (sigue al dispositivo), desde la barra superior.
+- **Bucles**: en la tarjeta de secciones (toda la canción, una sección o un rango de compases) o arrastrando
+  sobre la tablatura.
 - **Importar**: abre archivos Guitar Pro (`.gp`, `.gpx`, `.gp5`, `.gp4`, `.gp3`) y MusicXML.
   Se guardan en el navegador, en «Mis archivos». Instalada en Chrome o Edge, Atril también
   abre esos archivos desde el sistema operativo.

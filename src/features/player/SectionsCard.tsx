@@ -40,36 +40,40 @@ function Sections() {
           Quitar bucle
         </button>
       </header>
-      {sections.length ? (
-        <ul className="rows">
-          {sections.map((s) => {
-            const active = looping && range?.from === s.from && range?.to === s.to;
-            const here = bar >= s.from && bar <= s.to;
-            return (
-              <li key={s.from} data-here={here || undefined}>
-                <span className="row-text">
-                  <strong>{s.name}</strong>
-                  <small>
-                    compases {s.from}–{s.to}
-                  </small>
-                </span>
-                <button
-                  className="chip-btn"
-                  aria-pressed={active}
-                  onClick={() => {
-                    setDraft(null);
-                    if (active) player.clearLoop();
-                    else player.loopBars(s.from, s.to);
-                  }}
-                >
-                  <LoopIcon />
-                  {active ? 'En bucle' : 'Repetir'}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      ) : (
+      <ul className="rows">
+        {[{ name: 'Toda la canción', from: 1, to: bars, whole: true }, ...sections].map((s) => {
+          const active = looping && range?.from === s.from && range?.to === s.to;
+          // The whole song never shows as "here": every bar is in it.
+          const here = !('whole' in s) && bar >= s.from && bar <= s.to;
+          return (
+            <li
+              key={'whole' in s ? 'whole' : s.from}
+              data-here={here || undefined}
+              data-whole={'whole' in s || undefined}
+            >
+              <span className="row-text">
+                <strong>{s.name}</strong>
+                <small>
+                  compases {s.from}–{s.to}
+                </small>
+              </span>
+              <button
+                className="chip-btn"
+                aria-pressed={active}
+                onClick={() => {
+                  setDraft(null);
+                  if (active) player.clearLoop();
+                  else player.loopBars(s.from, s.to);
+                }}
+              >
+                <LoopIcon />
+                {active ? 'En bucle' : 'Repetir'}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+      {!sections.length && (
         <p className="hint">Esta partitura no marca secciones. Elige compases o arrastra sobre la tablatura.</p>
       )}
       <div className="bars-row">

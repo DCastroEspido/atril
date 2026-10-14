@@ -1,5 +1,5 @@
+import { EyeIcon, HeadphonesIcon, SpeakerIcon, SpeakerOffIcon } from '../../ui/icons';
 import { Range } from '../../ui/Range';
-import { Segmented } from '../../ui/Segmented';
 import { useToast } from '../../ui/Toast';
 import { usePlayer, usePlayerState } from './PlayerContext';
 
@@ -23,68 +23,71 @@ const GM: Record<number, string> = {
   49: 'cuerdas',
 };
 
-type Toggle = 'v' | 'm' | 's';
-const TOGGLES = [
-  { value: 'v' as const, label: 'Ver', title: 'Mostrar en la partitura' },
-  { value: 'm' as const, label: 'Mute', title: 'Silenciar' },
-  { value: 's' as const, label: 'Solo', title: 'Dejarla sola' },
-];
-
+/** Every instrument of the song: whether it is drawn, whether it sounds, solo and volume. */
 export function Mixer() {
   const player = usePlayer();
   const { score, mix } = usePlayerState(player)!;
   const toast = useToast();
   if (!score) return null;
 
-  const toggle = (i: number, t: Toggle) => {
-    if (t === 'v' && !player.toggleVisible(i)) toast('Deja al menos una pista visible');
-    if (t === 'm') player.toggleMute(i);
-    if (t === 's') player.toggleSolo(i);
-  };
-
   return (
-    <div className="mixer">
-      <p className="hint">Ver la muestra en la tablatura, Mute la silencia y Solo deja solo esa pista.</p>
-      <div className="tracks">
-        {score.tracks.map((t, i) => {
-          const m = mix[i];
-          if (!m) return null;
-          const instrument = t.isPercussion
-            ? 'batería'
-            : (GM[t.playbackInfo.program] ?? `programa ${t.playbackInfo.program}`);
-          const on: Toggle[] = [
-            ...(m.visible ? ['v' as const] : []),
-            ...(m.mute ? ['m' as const] : []),
-            ...(m.solo ? ['s' as const] : []),
-          ];
-          return (
-            <div className="trk" key={i} data-muted={m.mute}>
-              <div className="nm">
-                <strong>{t.name || `Pista ${i + 1}`}</strong>
-                <small>{instrument}</small>
-              </div>
-              <Segmented
-                label={`Opciones de ${t.name}`}
-                className="vms"
-                options={TOGGLES}
-                selected={on}
-                onSelect={(v) => toggle(i, v)}
-              />
-              <Range
-                id={`vol-${i}`}
-                min={0}
-                max={200}
-                step={5}
-                value={m.volume}
-                aria-label={`Volumen de ${t.name}`}
-                title={`Volumen ${m.volume}%`}
-                onChange={(e) => player.setVolume(i, Number(e.target.value))}
-              />
-              <output htmlFor={`vol-${i}`}>{m.volume}%</output>
+    <ul className="instruments">
+      {score.tracks.map((t, i) => {
+        const m = mix[i];
+        if (!m) return null;
+        const name = t.name || `Pista ${i + 1}`;
+        const instrument = t.isPercussion
+          ? 'batería'
+          : (GM[t.playbackInfo.program] ?? `programa ${t.playbackInfo.program}`);
+        return (
+          <li key={i} className="instrument" data-muted={m.mute}>
+            <div className="nm">
+              <strong>{name}</strong>
+              <small>{instrument}</small>
             </div>
-          );
-        })}
-      </div>
-    </div>
+            <div className="inst-toggles">
+              <button
+                className="inst-btn"
+                aria-pressed={m.visible}
+                title={m.visible ? 'Se ve en la tablatura' : 'No se ve en la tablatura'}
+                onClick={() => player.toggleVisible(i) || toast('Deja al menos un instrumento a la vista')}
+              >
+                <EyeIcon />
+                <span>Ver</span>
+              </button>
+              <button
+                className="inst-btn"
+                aria-pressed={!m.mute}
+                title={m.mute ? 'Silenciado' : 'Suena'}
+                onClick={() => player.toggleMute(i)}
+              >
+                {m.mute ? <SpeakerOffIcon /> : <SpeakerIcon />}
+                <span>Suena</span>
+              </button>
+              <button
+                className="inst-btn solo"
+                aria-pressed={m.solo}
+                title="Escuchar solo este instrumento"
+                onClick={() => player.toggleSolo(i)}
+              >
+                <HeadphonesIcon />
+                <span>Solo</span>
+              </button>
+            </div>
+            <Range
+              id={`vol-${i}`}
+              min={0}
+              max={200}
+              step={5}
+              value={m.volume}
+              disabled={m.mute}
+              aria-label={`Volumen de ${name}`}
+              title={`Volumen ${m.volume}%`}
+              onChange={(e) => player.setVolume(i, Number(e.target.value))}
+            />
+          </li>
+        );
+      })}
+    </ul>
   );
 }

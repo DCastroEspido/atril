@@ -33,3 +33,20 @@ export const LinkIcon = icon(
 export const CloseIcon = icon(
   'M6.4 5 12 10.6 17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4z',
 );
+export const SunIcon = icon(
+  'M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zM11 1h2v3h-2zm0 19h2v3h-2zM1 11h3v2H1zm19 0h3v2h-3zM4.2 5.6l1.4-1.4 2.1 2.1-1.4 1.4zm12.1 12.1 1.4-1.4 2.1 2.1-1.4 1.4zM4.2 18.4l2.1-2.1 1.4 1.4-2.1 2.1zM16.3 6.3l2.1-2.1 1.4 1.4-2.1 2.1z',
+);
+export const MoonIcon = icon('M14.5 2.5A9.5 9.5 0 1 0 21.5 15 7.5 7.5 0 0 1 14.5 2.5z');
+export const SystemIcon = icon('M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm0 2v16a8 8 0 0 0 0-16z');
+export const EyeIcon = icon(
+  'M12 5c5 0 9 4.5 10 7-1 2.5-5 7-10 7S3 14.5 2 12c1-2.5 5-7 10-7zm0 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4z',
+);
+export const SpeakerIcon = icon(
+  'M4 9h4l5-4v14l-5-4H4zm12.5-1.5a6 6 0 0 1 0 9l-1.4-1.4a4 4 0 0 0 0-6.2zm2.8-2.8a10 10 0 0 1 0 14.6l-1.4-1.4a8 8 0 0 0 0-11.8z',
+);
+export const SpeakerOffIcon = icon(
+  'M4 9h4l5-4v14l-5-4H4zm11.6.2 1.4-1.4 2.5 2.5 2.5-2.5 1.4 1.4-2.5 2.5 2.5 2.5-1.4 1.4-2.5-2.5-2.5 2.5-1.4-1.4 2.5-2.5z',
+);
+export const HeadphonesIcon = icon(
+  'M12 3a9 9 0 0 1 9 9v6a3 3 0 0 1-3 3h-2v-8h3v-1a7 7 0 0 0-14 0v1h3v8H6a3 3 0 0 1-3-3v-6a9 9 0 0 1 9-9z',
+);

@@ -3,7 +3,8 @@
  * hunter green as the complement, light bronze only for shadows and fills.
  * Layout: a dashboard around the tab. "Now playing" on top, the tab card as the hero with its
  * transport, the console (tempo, tracks) beside it, sections and favourites below; the library is a drawer.
- * One look on purpose: always pearl beige, also when the system is in dark mode.
+ * Themes: light (pearl) and an after-hours dark (chocolate). The viewer picks Claro, Oscuro or Sistema;
+ * index.html sets data-theme before first paint, and Sistema leaves it unset so the media query decides.
  */
 :root {
   /* palette */
@@ -46,4 +47,42 @@
     0 18px 40px -18px color-mix(in srgb, var(--shadow-color) 95%, transparent);
   --shadow-sm: 0 6px 16px -8px color-mix(in srgb, var(--shadow-color) 90%, transparent);
   color-scheme: light;
+}
+
+/* After hours: the same hi-fi on a chocolate ground. The score paper stays light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --ground: #2a1513;
+    --surface: #3a201c;
+    --sunk: #221110;
+    --ink: var(--pearl);
+    --ink-soft: #cdb89a;
+    --line: color-mix(in srgb, var(--pearl) 18%, transparent);
+    --rule: color-mix(in srgb, var(--pearl) 55%, transparent);
+    --primary: #e66f75;
+    --on-primary: #2a1513;
+    --complement: #9cc3a0;
+    --on-complement: #2a1513;
+    --shadow-color: #0d0505;
+    --hover: color-mix(in srgb, var(--bronze) 16%, transparent);
+    --selected: color-mix(in srgb, #e66f75 18%, var(--surface));
+    color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --ground: #2a1513;
+  --surface: #3a201c;
+  --sunk: #221110;
+  --ink: var(--pearl);
+  --ink-soft: #cdb89a;
+  --line: color-mix(in srgb, var(--pearl) 18%, transparent);
+  --rule: color-mix(in srgb, var(--pearl) 55%, transparent);
+  --primary: #e66f75;
+  --on-primary: #2a1513;
+  --complement: #9cc3a0;
+  --on-complement: #2a1513;
+  --shadow-color: #0d0505;
+  --hover: color-mix(in srgb, var(--bronze) 16%, transparent);
+  --selected: color-mix(in srgb, #e66f75 18%, var(--surface));
+  color-scheme: dark;
 }

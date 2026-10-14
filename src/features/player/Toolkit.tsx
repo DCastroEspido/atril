@@ -1,11 +1,9 @@
-import { useState } from 'react';
 import { Range } from '../../ui/Range';
 import { Segmented } from '../../ui/Segmented';
 import { Mixer } from './Mixer';
 import { usePlayer, usePlayerState } from './PlayerContext';
 
 const PRESETS = [50, 75, 100].map((p) => ({ value: p, label: `${p}%` }));
-type Tab = 'tempo' | 'tracks';
 
 function Tempo() {
   const player = usePlayer();
@@ -13,7 +11,10 @@ function Tempo() {
   const bpm = score ? Math.round((score.tempo * speed) / 100) : null;
   const nudge = (d: number) => player.setSpeed(Math.min(150, Math.max(25, speed + d)));
   return (
-    <div className="tempo">
+    <section className="kit-section" aria-labelledby="kit-tempo">
+      <h4 className="eyebrow" id="kit-tempo">
+        Tempo
+      </h4>
       <div className="dial">
         <button className="round" onClick={() => nudge(-5)} aria-label="Más lento" disabled={speed <= 25}>
           −
@@ -41,41 +42,25 @@ function Tempo() {
         selected={[speed]}
         onSelect={(p) => player.setSpeed(p)}
       />
-      <p className="hint">Empieza lento y sube de 5 en 5 cuando el bucle te salga limpio.</p>
-    </div>
+    </section>
   );
 }
 
-/** The side console: tempo and the band's tracks. */
+/** The side console: tempo on top, then every instrument of the band. */
 export function Toolkit() {
-  const [tab, setTab] = useState<Tab>('tempo');
+  const { score } = usePlayerState(usePlayer())!;
   return (
     <aside className="card toolkit" aria-label="Consola">
-      <header className="panel-head">
-        <h3>Consola</h3>
-      </header>
-      <div className="tabs" role="tablist" aria-label="Herramientas">
-        {(
-          [
-            ['tempo', 'Tempo'],
-            ['tracks', 'Pistas'],
-          ] as const
-        ).map(([id, label]) => (
-          <button
-            key={id}
-            role="tab"
-            id={`tab-${id}`}
-            aria-selected={tab === id}
-            aria-controls={`panel-${id}`}
-            onClick={() => setTab(id)}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-      <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className="tabpanel">
-        {tab === 'tempo' ? <Tempo /> : <Mixer />}
-      </div>
+      <Tempo />
+      <section className="kit-section" aria-labelledby="kit-instruments">
+        <div className="kit-head">
+          <h4 className="eyebrow" id="kit-instruments">
+            Instrumentos
+          </h4>
+          {score && <span className="hint">{score.tracks.length}</span>}
+        </div>
+        <Mixer />
+      </section>
     </aside>
   );
 }

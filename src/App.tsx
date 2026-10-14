@@ -18,6 +18,7 @@ import { useInstallPrompt } from './pwa/useInstallPrompt';
 import { readPref, writePref } from './storage/prefs';
 import type { StoredScore } from './storage/scoreFiles';
 import { CloseIcon, InstallIcon, SearchIcon } from './ui/icons';
+import { ThemePicker } from './ui/ThemePicker';
 import { useToast } from './ui/Toast';
 
 const DEFAULT_VIEW: ScoreView = { layout: 'line', notation: 'tab' };
@@ -140,8 +141,10 @@ export function App() {
         </div>
         <button className="search-trigger" aria-controls="lib" aria-expanded={libOpen} onClick={() => setLibOpen(true)}>
           <SearchIcon />
-          <span>Buscar tablaturas, importar archivos…</span>
+          <span className="long">Buscar tablaturas, importar archivos…</span>
+          <span className="short">Buscar</span>
         </button>
+        <ThemePicker />
         {install && (
           <button className="pill ghost install" onClick={install} aria-label="Instalar Atril">
             <InstallIcon />
