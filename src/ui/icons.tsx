@@ -50,3 +50,4 @@ export const SpeakerOffIcon = icon(
 export const HeadphonesIcon = icon(
   'M12 3a9 9 0 0 1 9 9v6a3 3 0 0 1-3 3h-2v-8h3v-1a7 7 0 0 0-14 0v1h3v8H6a3 3 0 0 1-3-3v-6a9 9 0 0 1 9-9z',
 );
+export const NoteIcon = icon('M9 3h11v13.5a3.5 3.5 0 1 1-2-3.2V8h-7v10.5a3.5 3.5 0 1 1-2-3.2z');

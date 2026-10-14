@@ -7,8 +7,10 @@ sin conexión.
 
 ## Qué hace
 
-- **Biblioteca con buscador**: un panel lateral que se abre desde la barra de búsqueda. Busca por
-  título, autor, estilo o técnica (`palm mute`, `arpegio`…) y filtra por estilo y nivel.
+- **Dos páginas**: «Practicar» (el reproductor) y «Biblioteca», en el menú de arriba o, en el móvil, en la
+  barra de abajo. La música sigue sonando mientras buscas.
+- **Biblioteca con buscador**: busca por título, autor, estilo o técnica (`palm mute`, `arpegio`…), filtra por
+  estilo y nivel, y desde ahí importa archivos o pega enlaces.
 - **Favoritas**: la ★ añade una canción a la tarjeta de favoritas, desde donde se abre con un toque.
 - **Reproductor**: la tablatura en una línea que avanza con la música (o en páginas), solo tab o tab con
   partitura, y debajo un mapa de la canción con lo denso que es cada compás; un clic salta a ese compás.

@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { hrefFor, type Page } from './app/routes';
+import { useRoute } from './app/useRoute';
 import { CATALOG } from './catalog';
 import { FavoritesCard } from './features/favorites/FavoritesCard';
 import { useFavorites } from './features/favorites/useFavorites';
 import { fetchScore, ScoreUrlError } from './features/import/fetchScore';
 import { readScoreFile } from './features/import/readScoreFile';
 import { useFileArrivals } from './features/import/useFileArrivals';
-import { LibraryPanel } from './features/library/LibraryPanel';
+import { LibraryPage } from './features/library/LibraryPage';
 import { useLibrary } from './features/library/useLibrary';
 import type { PlayerController, ScoreView } from './features/player/controller';
 import { NowPlaying } from './features/player/NowPlaying';
@@ -17,7 +19,7 @@ import { UpdateBanner } from './pwa/UpdateBanner';
 import { useInstallPrompt } from './pwa/useInstallPrompt';
 import { readPref, writePref } from './storage/prefs';
 import type { StoredScore } from './storage/scoreFiles';
-import { CloseIcon, InstallIcon, SearchIcon } from './ui/icons';
+import { InstallIcon, NoteIcon, ShelfIcon } from './ui/icons';
 import { ThemePicker } from './ui/ThemePicker';
 import { useToast } from './ui/Toast';
 
@@ -29,7 +31,7 @@ export function App() {
   const { favorites, toggle: toggleFavorite, remove: removeFavorite } = useFavorites();
   const install = useInstallPrompt();
   const [player, setPlayer] = useState<PlayerController | null>(null);
-  const [libOpen, setLibOpen] = useState(false);
+  const { page, go } = useRoute();
   const [initialView] = useState<ScoreView>(() => ({ ...DEFAULT_VIEW, ...readPref<Partial<ScoreView>>('view', {}) }));
   const [chosenId, setChosenId] = useState<string>(() => readPref('last', favorites[0] ?? CATALOG[0].id));
 
@@ -42,11 +44,15 @@ export function App() {
     [favorites, library.entries],
   );
 
-  const open = useCallback((id: string) => {
-    setChosenId(id);
-    writePref('last', id);
-    setLibOpen(false);
-  }, []);
+  /** Puts a song on the stand and goes to the player. */
+  const open = useCallback(
+    (id: string) => {
+      setChosenId(id);
+      writePref('last', id);
+      go('practice');
+    },
+    [go],
+  );
 
   // Load the chosen song into the player. Imported files need their bytes read first.
   // Depends on plain values so re-listing the library does not reload the song.
@@ -120,30 +126,38 @@ export function App() {
     [library, removeFavorite, toast, currentId, open],
   );
 
-  // The drawer opens on the search field; Escape closes it.
+  // Each page starts at the top.
   useEffect(() => {
-    if (!libOpen) return;
-    document.getElementById('q')?.focus();
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setLibOpen(false);
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [libOpen]);
+    window.scrollTo(0, 0);
+  }, [page]);
 
   const withPlayer = (node: ReactNode) =>
     player ? <PlayerContext.Provider value={player}>{node}</PlayerContext.Provider> : null;
 
+  const nav = (where: string) => (
+    <nav className={`menu ${where}`} aria-label="Secciones de Atril">
+      {(
+        [
+          ['practice', 'Practicar', NoteIcon],
+          ['library', 'Biblioteca', ShelfIcon],
+        ] as [Page, string, typeof NoteIcon][]
+      ).map(([to, label, Icon]) => (
+        <a key={to} href={hrefFor(to)} aria-current={page === to ? 'page' : undefined}>
+          <Icon />
+          <span>{label}</span>
+        </a>
+      ))}
+    </nav>
+  );
+
   return (
-    <div className={`app${libOpen ? ' lib-open' : ''}`}>
+    <div className="app" data-page={page}>
       <header className="top">
-        <div className="brand">
+        <a className="brand" href={hrefFor('practice')} aria-label="Atril, ir a practicar">
           <span className="starburst" aria-hidden="true" />
           <h1>Atril</h1>
-        </div>
-        <button className="search-trigger" aria-controls="lib" aria-expanded={libOpen} onClick={() => setLibOpen(true)}>
-          <SearchIcon />
-          <span className="long">Buscar tablaturas, importar archivos…</span>
-          <span className="short">Buscar</span>
-        </button>
+        </a>
+        {nav('menu-top')}
         <ThemePicker />
         {install && (
           <button className="pill ghost install" onClick={install} aria-label="Instalar Atril">
@@ -153,24 +167,7 @@ export function App() {
         )}
       </header>
 
-      {libOpen && <div className="scrim" onClick={() => setLibOpen(false)} aria-hidden="true" />}
-      <div className="drawer" id="lib" hidden={!libOpen}>
-        <button className="icon-btn drawer-close" aria-label="Cerrar biblioteca" onClick={() => setLibOpen(false)}>
-          <CloseIcon />
-        </button>
-        <LibraryPanel
-          entries={library.entries}
-          currentId={currentId}
-          favorites={favorites}
-          onOpen={open}
-          onToggleFavorite={toggleFavorite}
-          onImport={importFile}
-          onOpenLink={openLink}
-          onDelete={deleteFile}
-        />
-      </div>
-
-      <main className="dash">
+      <main className="dash" hidden={page !== 'practice'} aria-label="Practicar">
         {withPlayer(
           <NowPlaying
             entry={current}
@@ -191,10 +188,24 @@ export function App() {
             favorites={favoriteEntries}
             currentId={currentId}
             onOpen={open}
-            onBrowse={() => setLibOpen(true)}
+            onBrowse={() => go('library')}
           />
         </div>
       </main>
+
+      <LibraryPage
+        active={page === 'library'}
+        entries={library.entries}
+        currentId={currentId}
+        favorites={favorites}
+        onOpen={open}
+        onToggleFavorite={toggleFavorite}
+        onImport={importFile}
+        onOpenLink={openLink}
+        onDelete={deleteFile}
+      />
+
+      {nav('menu-bottom')}
       <UpdateBanner />
     </div>
   );

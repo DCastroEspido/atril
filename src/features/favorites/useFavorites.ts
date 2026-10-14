@@ -7,7 +7,9 @@ const FIRST_RUN = ['sol-naciente', 'blues-la'];
 export function useFavorites() {
   const [favorites, setFavorites] = useState<string[]>(() => readPref('favs', FIRST_RUN));
 
-  useEffect(() => writePref('favs', favorites), [favorites]);
+  useEffect(() => {
+    writePref('favs', favorites);
+  }, [favorites]);
 
   const toggle = useCallback(
     (id: string) => setFavorites((prev) => (prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id])),
