@@ -1,7 +1,8 @@
 /*
  * Mid-century hi-fi: warm paper grounds, chocolate rules, a brown-red primary,
- * hunter green as the complement, light bronze only for flat offset shadows and fills.
- * Layout: library rail | record-sleeve header, mixer, score paper | docked transport and practice modules.
+ * hunter green as the complement, light bronze only for shadows and fills.
+ * Layout: a dashboard around the tab. "Now playing" on top, the tab card as the hero with its
+ * transport, the console (tempo, tracks) beside it, sections and favourites below; the library is a drawer.
  */
 :root {
   /* palette */
@@ -35,10 +36,14 @@
   --font-brand: 'Yellowtail', 'Brush Script MT', cursive;
   --font-num: 'DM Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
-  --r: 18px;
+  --r: 22px;
+  --r-sm: 14px;
   --r-pill: 999px;
-  --shadow: 4px 4px 0 var(--shadow-color);
-  --shadow-sm: 2px 2px 0 var(--shadow-color);
+  /* Soft, warm shadows: bronze light that pools under cards. */
+  --shadow:
+    0 1px 2px color-mix(in srgb, var(--shadow-color) 45%, transparent),
+    0 18px 40px -18px color-mix(in srgb, var(--shadow-color) 95%, transparent);
+  --shadow-sm: 0 6px 16px -8px color-mix(in srgb, var(--shadow-color) 90%, transparent);
   color-scheme: light;
 }
 
@@ -56,7 +61,7 @@
     --on-primary: #2a1513;
     --complement: #9cc3a0;
     --on-complement: #2a1513;
-    --shadow-color: #120807;
+    --shadow-color: #0d0505;
     --hover: color-mix(in srgb, var(--bronze) 16%, transparent);
     --selected: color-mix(in srgb, #e66f75 18%, var(--surface));
     color-scheme: dark;

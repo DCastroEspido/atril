@@ -7,12 +7,14 @@ sin conexión.
 
 ## Qué hace
 
-- **Biblioteca con buscador**: busca por título, autor, estilo o técnica (`palm mute`,
-  `arpegio`…) y filtra por estilo y nivel.
-- **Favoritas**: la ★ añade una canción al selector de la barra superior.
-- **Reproductor**: mezclador por pista (ver en la partitura, silenciar, solo, volumen),
-  velocidad del 25 % al 150 %, metrónomo y cuenta atrás.
-- **Bucles**: por sección, por rango de compases o arrastrando sobre la partitura.
+- **Biblioteca con buscador**: un panel lateral que se abre desde la barra de búsqueda. Busca por
+  título, autor, estilo o técnica (`palm mute`, `arpegio`…) y filtra por estilo y nivel.
+- **Favoritas**: la ★ añade una canción a la tarjeta de favoritas, desde donde se abre con un toque.
+- **Reproductor**: la tablatura en una línea que avanza con la música (o en páginas), solo tab o tab con
+  partitura, y debajo un mapa de la canción con lo denso que es cada compás; un clic salta a ese compás.
+  Interruptores de metrónomo, cuenta atrás, bucle y «silenciar mi pista» para tocarla tú sobre la banda.
+- **Consola**: tempo del 25 % al 150 % y mezclador por pista (ver, silenciar, solo, volumen).
+- **Bucles**: en la tarjeta de secciones (una sección, o un rango de compases) o arrastrando sobre la tablatura.
 - **Importar**: abre archivos Guitar Pro (`.gp`, `.gpx`, `.gp5`, `.gp4`, `.gp3`) y MusicXML.
   Se guardan en el navegador, en «Mis archivos». Instalada en Chrome o Edge, Atril también
   abre esos archivos desde el sistema operativo.

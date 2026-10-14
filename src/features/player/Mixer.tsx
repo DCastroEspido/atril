@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Range } from '../../ui/Range';
 import { Segmented } from '../../ui/Segmented';
 import { useToast } from '../../ui/Toast';
@@ -35,8 +34,6 @@ export function Mixer() {
   const player = usePlayer();
   const { score, mix } = usePlayerState(player)!;
   const toast = useToast();
-  // Folded on phones, where the score needs the room.
-  const [open, setOpen] = useState(() => !window.matchMedia('(max-width: 860px)').matches);
   if (!score) return null;
 
   const toggle = (i: number, t: Toggle) => {
@@ -46,11 +43,8 @@ export function Mixer() {
   };
 
   return (
-    <details className="mixer card" open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
-      <summary>
-        <span className="eyebrow">Pistas</span>
-        <span className="hint">{score.tracks.length} instrumentos · elige qué ver y qué suena</span>
-      </summary>
+    <div className="mixer">
+      <p className="hint">Ver la muestra en la tablatura, Mute la silencia y Solo deja solo esa pista.</p>
       <div className="tracks">
         {score.tracks.map((t, i) => {
           const m = mix[i];
@@ -91,6 +85,6 @@ export function Mixer() {
           );
         })}
       </div>
-    </details>
+    </div>
   );
 }

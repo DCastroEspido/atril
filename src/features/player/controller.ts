@@ -1,4 +1,4 @@
-import { AlphaTabApi, synth, type model } from '@coderline/alphatab';
+import { AlphaTabApi, LayoutMode, StaveProfile, synth, type model } from '@coderline/alphatab';
 import { barAtTick, clampBars, rangeBeats } from './scoreNav';
 
 export interface TrackMix {
@@ -27,6 +27,13 @@ export interface PlayerState {
   metronome: boolean;
   countIn: boolean;
   mix: TrackMix[];
+  view: ScoreView;
+}
+
+/** How the score is drawn: one scrolling line or pages; tab only or tab with standard notation. */
+export interface ScoreView {
+  layout: 'line' | 'page';
+  notation: 'tab' | 'both';
 }
 
 export interface Position {
@@ -49,6 +56,7 @@ const INITIAL: PlayerState = {
   metronome: false,
   countIn: false,
   mix: [],
+  view: { layout: 'line', notation: 'tab' },
 };
 
 type Listener = () => void;
@@ -58,6 +66,8 @@ const SCORE_INK = '#4a1f1c';
 const SCORE_INK_SOFT = '#6a2e2a';
 const SCORE_LINES = '#8c6a5c';
 const SCORE_ACCENT = '#a2242f';
+/** The single line is the focus of the screen, so it is drawn larger than pages. */
+const scaleFor = (view: ScoreView) => (view.layout === 'line' ? 1.15 : 0.92);
 const SCORE_FONT = '"Jost Variable", Jost, Futura, sans-serif';
 
 /**
@@ -73,13 +83,15 @@ export class PlayerController {
   /** Range to draw again once a re-render (track visibility change) finishes. */
   private rehighlight: { from: number; to: number } | null = null;
 
-  constructor(container: HTMLElement, scrollElement: HTMLElement) {
+  constructor(container: HTMLElement, scrollElement: HTMLElement, view: ScoreView = INITIAL.view) {
     const base = import.meta.env.BASE_URL;
+    this.state = { ...INITIAL, view };
     this.api = new AlphaTabApi(container, {
       core: { fontDirectory: `${base}font/`, logLevel: 'warning' },
       display: {
-        layoutMode: 'page',
-        scale: 0.92,
+        layoutMode: view.layout === 'line' ? LayoutMode.Horizontal : LayoutMode.Page,
+        staveProfile: view.notation === 'tab' ? StaveProfile.Tab : StaveProfile.Default,
+        scale: scaleFor(view),
         // Printed in chocolate ink on the paper the page draws behind it.
         resources: {
           mainGlyphColor: SCORE_INK,
@@ -245,6 +257,28 @@ export class PlayerController {
   /** Jump to a point of the song, 0..1. */
   seek(fraction: number) {
     if (this.position.end) this.api.timePosition = fraction * this.position.end;
+  }
+
+  /** Jump to the start of a bar, 1-based. Ignores repeats, like the position read-out. */
+  seekToBar(bar: number) {
+    const master = this.state.score?.masterBars[bar - 1];
+    if (master) this.api.tickPosition = master.start;
+  }
+
+  setView(patch: Partial<ScoreView>) {
+    const view = { ...this.state.view, ...patch };
+    const { display } = this.api.settings;
+    display.layoutMode = view.layout === 'line' ? LayoutMode.Horizontal : LayoutMode.Page;
+    display.staveProfile = view.notation === 'tab' ? StaveProfile.Tab : StaveProfile.Default;
+    display.scale = scaleFor(view);
+    // The highlight belongs to beats drawn now; draw it again after the new layout.
+    if (this.state.range) {
+      this.rehighlight = this.state.range;
+      this.dropSelection(this.state.range.from);
+    }
+    this.set({ view });
+    this.api.updateSettings();
+    this.api.render();
   }
 
   setSpeed(percent: number) {

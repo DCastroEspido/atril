@@ -1,26 +1,26 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { CATALOG } from './catalog';
-import { FavoritesSelect } from './features/favorites/FavoritesSelect';
+import { FavoritesCard } from './features/favorites/FavoritesCard';
 import { useFavorites } from './features/favorites/useFavorites';
 import { fetchScore, ScoreUrlError } from './features/import/fetchScore';
 import { readScoreFile } from './features/import/readScoreFile';
 import { useFileArrivals } from './features/import/useFileArrivals';
 import { LibraryPanel } from './features/library/LibraryPanel';
 import { useLibrary } from './features/library/useLibrary';
-import type { PlayerController } from './features/player/controller';
-import { Mixer } from './features/player/Mixer';
+import type { PlayerController, ScoreView } from './features/player/controller';
+import { NowPlaying } from './features/player/NowPlaying';
+import { PlayerCard } from './features/player/PlayerCard';
 import { PlayerContext } from './features/player/PlayerContext';
-import { ScoreView } from './features/player/ScoreView';
-import { SongHeader } from './features/player/SongHeader';
-import { PracticePanel, Transport } from './features/player/Transport';
+import { SectionsCard } from './features/player/SectionsCard';
+import { Toolkit } from './features/player/Toolkit';
 import { UpdateBanner } from './pwa/UpdateBanner';
 import { useInstallPrompt } from './pwa/useInstallPrompt';
 import { readPref, writePref } from './storage/prefs';
 import type { StoredScore } from './storage/scoreFiles';
-import { InstallIcon, ShelfIcon } from './ui/icons';
+import { CloseIcon, InstallIcon, SearchIcon } from './ui/icons';
 import { useToast } from './ui/Toast';
 
-const narrow = () => window.matchMedia('(max-width: 860px)').matches;
+const DEFAULT_VIEW: ScoreView = { layout: 'line', notation: 'tab' };
 
 export function App() {
   const toast = useToast();
@@ -29,6 +29,7 @@ export function App() {
   const install = useInstallPrompt();
   const [player, setPlayer] = useState<PlayerController | null>(null);
   const [libOpen, setLibOpen] = useState(false);
+  const [initialView] = useState<ScoreView>(() => ({ ...DEFAULT_VIEW, ...readPref<Partial<ScoreView>>('view', {}) }));
   const [chosenId, setChosenId] = useState<string>(() => readPref('last', favorites[0] ?? CATALOG[0].id));
 
   // A remembered imported file that is gone (cleared storage) falls back to the first catalog song.
@@ -43,7 +44,7 @@ export function App() {
   const open = useCallback((id: string) => {
     setChosenId(id);
     writePref('last', id);
-    if (narrow()) setLibOpen(false);
+    setLibOpen(false);
   }, []);
 
   // Load the chosen song into the player. Imported files need their bytes read first.
@@ -118,64 +119,78 @@ export function App() {
     [library, removeFavorite, toast, currentId, open],
   );
 
+  // The drawer opens on the search field; Escape closes it.
+  useEffect(() => {
+    if (!libOpen) return;
+    document.getElementById('q')?.focus();
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setLibOpen(false);
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [libOpen]);
+
+  const withPlayer = (node: ReactNode) =>
+    player ? <PlayerContext.Provider value={player}>{node}</PlayerContext.Provider> : null;
+
   return (
     <div className={`app${libOpen ? ' lib-open' : ''}`}>
       <header className="top">
-        <button
-          className="pill lib-toggle"
-          aria-controls="lib"
-          aria-expanded={libOpen}
-          onClick={() => setLibOpen(!libOpen)}
-        >
-          <ShelfIcon />
-          Biblioteca
-        </button>
         <div className="brand">
           <span className="starburst" aria-hidden="true" />
           <h1>Atril</h1>
-          <span className="tagline">tablaturas para tocar con banda</span>
         </div>
+        <button className="search-trigger" aria-controls="lib" aria-expanded={libOpen} onClick={() => setLibOpen(true)}>
+          <SearchIcon />
+          <span>Buscar tablaturas, importar archivos…</span>
+        </button>
         {install && (
-          <button className="pill ghost" onClick={install}>
+          <button className="pill ghost install" onClick={install} aria-label="Instalar Atril">
             <InstallIcon />
-            Instalar
+            <span>Instalar</span>
           </button>
         )}
-        <FavoritesSelect favorites={favoriteEntries} currentId={currentId} onOpen={open} />
       </header>
 
       {libOpen && <div className="scrim" onClick={() => setLibOpen(false)} aria-hidden="true" />}
-      <LibraryPanel
-        entries={library.entries}
-        currentId={currentId}
-        favorites={favorites}
-        onOpen={open}
-        onToggleFavorite={toggleFavorite}
-        onImport={importFile}
-        onOpenLink={openLink}
-        onDelete={deleteFile}
-      />
+      <div className="drawer" id="lib" hidden={!libOpen}>
+        <button className="icon-btn drawer-close" aria-label="Cerrar biblioteca" onClick={() => setLibOpen(false)}>
+          <CloseIcon />
+        </button>
+        <LibraryPanel
+          entries={library.entries}
+          currentId={currentId}
+          favorites={favorites}
+          onOpen={open}
+          onToggleFavorite={toggleFavorite}
+          onImport={importFile}
+          onOpenLink={openLink}
+          onDelete={deleteFile}
+        />
+      </div>
 
-      <main className="stage">
-        {player && (
-          <PlayerContext.Provider value={player}>
-            <SongHeader
-              entry={current}
-              favorite={favorites.includes(currentId)}
-              onToggleFavorite={() => toggleFavorite(currentId)}
-            />
-            <aside className="rail" aria-label="Consola de práctica">
-              <PracticePanel />
-              <Mixer />
-            </aside>
-          </PlayerContext.Provider>
+      <main className="dash">
+        {withPlayer(
+          <NowPlaying
+            entry={current}
+            favorite={favorites.includes(currentId)}
+            onToggleFavorite={() => toggleFavorite(currentId)}
+          />,
         )}
-        <ScoreView player={player} onPlayer={setPlayer} />
-        {player && (
-          <PlayerContext.Provider value={player}>
-            <Transport />
-          </PlayerContext.Provider>
-        )}
+        <PlayerCard
+          player={player}
+          onPlayer={setPlayer}
+          initialView={initialView}
+          onViewChange={(view) => writePref('view', view)}
+        />
+        {withPlayer(<Toolkit />)}
+        <div className="below">
+          {withPlayer(<SectionsCard />)}
+          <FavoritesCard
+            favorites={favoriteEntries}
+            currentId={currentId}
+            onOpen={open}
+            onBrowse={() => setLibOpen(true)}
+          />
+        </div>
       </main>
       <UpdateBanner />
     </div>

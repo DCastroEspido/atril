@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { importer, Settings } from '@coderline/alphatab';
 import { CATALOG } from '../../catalog';
-import { barAtTick, clampBars, rangeBeats, sectionsOf } from './scoreNav';
+import { barAtTick, barDensity, clampBars, rangeBeats, sectionsOf } from './scoreNav';
 
 const load = (id: string) => {
   const imp = new importer.AlphaTexImporter();
@@ -40,5 +40,14 @@ describe('scoreNav', () => {
     expect(first.voice.bar.index).toBe(4);
     expect(last.voice.bar.index).toBe(7);
     expect(last.nextBeat?.voice.bar.index).toBe(8);
+  });
+
+  it('counts the notes of every track in each bar', () => {
+    const density = barDensity(score);
+    expect(density).toHaveLength(score.masterBars.length);
+    // The solo (bars 13-16) adds the lead guitar on top of the band.
+    expect(density[12]).toBeGreaterThan(density[8]);
+    // The last bar is one chord, a bass note and a crash.
+    expect(density[16]).toBe(3 + 1 + 1 + 2);
   });
 });

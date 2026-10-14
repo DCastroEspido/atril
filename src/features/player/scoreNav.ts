@@ -46,3 +46,14 @@ export function rangeBeats(track: model.Track, from: number, to: number): [model
   const last = beatsOf(to);
   return [beatsOf(from)[0], last[last.length - 1]];
 }
+
+/** Notes per bar across every track: the shape of the song, drawn as its timeline. */
+export function barDensity(score: model.Score): number[] {
+  return score.masterBars.map((_, i) => {
+    let notes = 0;
+    for (const track of score.tracks)
+      for (const staff of track.staves)
+        for (const voice of staff.bars[i]?.voices ?? []) for (const beat of voice.beats) notes += beat.notes.length;
+    return notes;
+  });
+}

@@ -8,21 +8,21 @@ interface Props {
   onToggleFavorite: () => void;
 }
 
-/** The record sleeve: label art, title and the song's facts. */
-export function SongHeader({ entry, favorite, onToggleFavorite }: Props) {
-  const { score } = usePlayerState(usePlayer())!;
+/** What is on the stand: record label, title and the facts a player checks first. */
+export function NowPlaying({ entry, favorite, onToggleFavorite }: Props) {
+  const { score, playing } = usePlayerState(usePlayer())!;
   const first = score?.masterBars[0];
   const facts: [string, string][] = [
     ['Tonalidad', entry?.key ?? '—'],
     ['Compás', entry?.timeLabel ?? (first ? `${first.timeSignatureNumerator}/${first.timeSignatureDenominator}` : '—')],
     ['Tempo', score ? `${score.tempo} bpm` : '—'],
-    ['Compases', score ? String(score.masterBars.length) : '—'],
+    ['Nivel', entry?.level ?? '—'],
   ];
   return (
-    <section className="songhead">
-      <div className="label-art" data-genre={entry?.genre} aria-hidden="true" />
+    <section className="now" aria-label="Canción abierta">
+      <div className="label-art" data-genre={entry?.genre} data-spinning={playing} aria-hidden="true" />
       <div className="titles">
-        <p className="eyebrow">{entry ? `${entry.genre} · ${entry.level}` : ' '}</p>
+        <p className="eyebrow">{playing ? 'Sonando ahora' : 'En el atril'}</p>
         <h2>{score?.title || entry?.title || 'Cargando…'}</h2>
         <p className="by">{score?.artist || entry?.artist || ' '}</p>
       </div>
@@ -34,9 +34,15 @@ export function SongHeader({ entry, favorite, onToggleFavorite }: Props) {
           </div>
         ))}
       </dl>
-      <button className="fav-btn" aria-pressed={favorite} onClick={onToggleFavorite} disabled={!entry}>
+      <button
+        className="icon-btn fav"
+        aria-pressed={favorite}
+        onClick={onToggleFavorite}
+        disabled={!entry}
+        aria-label={favorite ? 'Quitar de favoritas' : 'Añadir a favoritas'}
+        title={favorite ? 'En favoritas' : 'Añadir a favoritas'}
+      >
         {favorite ? <StarIcon /> : <StarOutlineIcon />}
-        <span>{favorite ? 'En favoritas' : 'Favorita'}</span>
       </button>
     </section>
   );
