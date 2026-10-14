@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { ImportIcon, StarIcon, StarOutlineIcon, TrashIcon } from '../../ui/icons';
 import { ACCEPTED_FILES } from '../import/readScoreFile';
+import { OnlineSearch } from './OnlineSearch';
 import { searchLibrary } from './search';
 import { IMPORTED_GENRE, type LibraryEntry } from './types';
 
@@ -63,58 +64,63 @@ export function LibraryPanel({ entries, currentId, favorites, onOpen, onToggleFa
         </div>
       </div>
 
-      <ul className="results">
-        {results.length === 0 && (
-          <li className="empty">
-            {genre === IMPORTED_GENRE && importedCount === 0
-              ? 'Aún no has importado archivos. Usa «Importar Guitar Pro» o arrastra un .gp a la ventana.'
-              : 'Nada coincide con esa búsqueda. Prueba con otro estilo o técnica.'}
-          </li>
-        )}
-        {results.map((e) => {
-          const fav = favorites.includes(e.id);
-          const imported = e.source.kind === 'file';
-          return (
-            <li key={e.id} className={e.id === currentId ? 'active' : undefined}>
-              <button className="item" onClick={() => onOpen(e.id)}>
-                <span className="t">{e.title}</span>
-                <span className="a">{imported ? e.artist || e.tags[0] : `${e.artist} · ${e.genre}`}</span>
-                <span className="m">
-                  <span className="lvl" data-l={e.level}>
-                    {e.level}
-                  </span>
-                  {!imported && <span>{`${e.key} · ${e.timeLabel} · ${e.tempo} bpm`}</span>}
-                </span>
-              </button>
-              <button
-                className="star"
-                aria-pressed={fav}
-                aria-label={fav ? `Quitar ${e.title} de favoritas` : `Añadir ${e.title} a favoritas`}
-                onClick={() => onToggleFavorite(e.id)}
-              >
-                {fav ? <StarIcon /> : <StarOutlineIcon />}
-              </button>
-              {imported &&
-                (confirming === e.id ? (
-                  <button
-                    className="del confirm"
-                    onClick={() => {
-                      setConfirming(null);
-                      onDelete(e.id);
-                    }}
-                    onBlur={() => setConfirming(null)}
-                  >
-                    Borrar
-                  </button>
-                ) : (
-                  <button className="del" aria-label={`Borrar ${e.title}`} onClick={() => setConfirming(e.id)}>
-                    <TrashIcon />
-                  </button>
-                ))}
+      <div className="results-scroll">
+        <ul className="results">
+          {results.length === 0 && (
+            <li className="empty">
+              {genre === IMPORTED_GENRE && importedCount === 0
+                ? 'Aún no has importado archivos. Usa «Importar Guitar Pro» o arrastra un .gp a la ventana.'
+                : query.trim()
+                  ? 'No está en tu biblioteca. Búscala en internet:'
+                  : 'Nada coincide con estos filtros.'}
             </li>
-          );
-        })}
-      </ul>
+          )}
+          {results.map((e) => {
+            const fav = favorites.includes(e.id);
+            const imported = e.source.kind === 'file';
+            return (
+              <li key={e.id} className={e.id === currentId ? 'active' : undefined}>
+                <button className="item" onClick={() => onOpen(e.id)}>
+                  <span className="t">{e.title}</span>
+                  <span className="a">{imported ? e.artist || e.tags[0] : `${e.artist} · ${e.genre}`}</span>
+                  <span className="m">
+                    <span className="lvl" data-l={e.level}>
+                      {e.level}
+                    </span>
+                    {!imported && <span>{`${e.key} · ${e.timeLabel} · ${e.tempo} bpm`}</span>}
+                  </span>
+                </button>
+                <button
+                  className="star"
+                  aria-pressed={fav}
+                  aria-label={fav ? `Quitar ${e.title} de favoritas` : `Añadir ${e.title} a favoritas`}
+                  onClick={() => onToggleFavorite(e.id)}
+                >
+                  {fav ? <StarIcon /> : <StarOutlineIcon />}
+                </button>
+                {imported &&
+                  (confirming === e.id ? (
+                    <button
+                      className="del confirm"
+                      onClick={() => {
+                        setConfirming(null);
+                        onDelete(e.id);
+                      }}
+                      onBlur={() => setConfirming(null)}
+                    >
+                      Borrar
+                    </button>
+                  ) : (
+                    <button className="del" aria-label={`Borrar ${e.title}`} onClick={() => setConfirming(e.id)}>
+                      <TrashIcon />
+                    </button>
+                  ))}
+              </li>
+            );
+          })}
+        </ul>
+        <OnlineSearch query={query} prominent={results.length === 0} />
+      </div>
 
       <div className="lib-foot">
         <button className="btn" onClick={() => fileInput.current?.click()}>
@@ -135,8 +141,8 @@ export function LibraryPanel({ entries, currentId, favorites, onOpen, onToggleFa
           }}
         />
         <p>
-          Abre .gp, .gpx, .gp5, .gp4, .gp3 y MusicXML. Las canciones del catálogo son tradicionales o ejercicios
-          propios; para otras, consigue su archivo Guitar Pro y arrástralo a la ventana.
+          Abre .gp, .gpx, .gp5, .gp4, .gp3 y MusicXML; también puedes arrastrarlos a la ventana. El catálogo trae piezas
+          tradicionales y ejercicios propios.
         </p>
       </div>
     </aside>

@@ -21,3 +21,6 @@ export const ImportIcon = icon('M11 4h2v9.2l3.3-3.3 1.4 1.4L12 17l-5.7-5.7 1.4-1
 export const LoopIcon = icon('M7 7h10v3l4-4-4-4v3H5v6h2zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2z');
 export const ShelfIcon = icon('M4 5h4v14H4zM10 5h4v14h-4zM16.2 5.6l3.8-1 3.6 13.5-3.8 1z');
 export const InstallIcon = icon('M5 20h14v-2H5zm7-3l5-5h-3V4h-4v8H7z');
+export const ExternalIcon = icon(
+  'M14 4h6v6h-2V7.4l-7.3 7.3-1.4-1.4L16.6 6H14zM5 6h6v2H6v10h10v-5h2v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z',
+);

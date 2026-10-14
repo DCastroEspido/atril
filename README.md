@@ -17,9 +17,12 @@ sin conexión.
   Se guardan en el navegador, en «Mis archivos». Instalada en Chrome o Edge, Atril también
   abre esos archivos desde el sistema operativo.
 
-El buscador busca en la biblioteca local: el catálogo incluido (piezas tradicionales y
-ejercicios propios) y los archivos importados. No descarga tablaturas de internet; para tocar
-otra canción, consigue su archivo Guitar Pro e impórtalo.
+El buscador busca primero en la biblioteca local: el catálogo incluido (piezas tradicionales y
+ejercicios propios) y los archivos importados. Debajo ofrece la misma búsqueda en Songsterr,
+Ultimate Guitar y 911Tabs, que se abre en su web. Atril no lee sus resultados ni carga sus
+tablaturas: Songsterr no ofrece una API pública (la de su web no admite llamadas desde otras
+páginas) y su política reserva la velocidad, los bucles y el solo de pistas a su suscripción.
+Para practicar una de esas canciones aquí, descarga su archivo Guitar Pro e impórtalo.
 
 ## Desarrollo
 
