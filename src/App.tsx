@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CATALOG } from './catalog';
 import { FavoritesSelect } from './features/favorites/FavoritesSelect';
 import { useFavorites } from './features/favorites/useFavorites';
+import { fetchScore, ScoreUrlError } from './features/import/fetchScore';
 import { readScoreFile } from './features/import/readScoreFile';
 import { useFileArrivals } from './features/import/useFileArrivals';
 import { LibraryPanel } from './features/library/LibraryPanel';
@@ -15,6 +16,7 @@ import { Transport } from './features/player/Transport';
 import { UpdateBanner } from './pwa/UpdateBanner';
 import { useInstallPrompt } from './pwa/useInstallPrompt';
 import { readPref, writePref } from './storage/prefs';
+import type { StoredScore } from './storage/scoreFiles';
 import { InstallIcon, ShelfIcon } from './ui/icons';
 import { useToast } from './ui/Toast';
 
@@ -67,6 +69,17 @@ export function App() {
     };
   }, [player, tex, isFile, currentId, getBytes, toast]);
 
+  const addScore = useCallback(
+    async (score: StoredScore) => {
+      const saved = await library.addFile(score);
+      toast(
+        saved ? `«${score.title}» añadida a Mis archivos` : `«${score.title}» abierta; este navegador no la guardará`,
+      );
+      open(score.id);
+    },
+    [library, open, toast],
+  );
+
   const importFile = useCallback(
     async (file: File) => {
       let score;
@@ -76,14 +89,23 @@ export function App() {
         toast('Ese archivo no parece una tablatura de Guitar Pro o MusicXML.');
         return;
       }
-      const saved = await library.addFile(score);
-      toast(
-        saved ? `«${score.title}» añadida a Mis archivos` : `«${score.title}» abierta; este navegador no la guardará`,
-      );
-      open(score.id);
+      await addScore(score);
     },
-    [library, open, toast],
+    [addScore, toast],
   );
+
+  const openLink = useCallback(
+    async (link: string) => {
+      try {
+        await addScore(await fetchScore(link));
+        return null;
+      } catch (e) {
+        return e instanceof ScoreUrlError ? e.message : 'No he podido abrir ese enlace.';
+      }
+    },
+    [addScore],
+  );
+
   useFileArrivals(importFile);
 
   const deleteFile = useCallback(
@@ -128,6 +150,7 @@ export function App() {
         onOpen={open}
         onToggleFavorite={toggleFavorite}
         onImport={importFile}
+        onOpenLink={openLink}
         onDelete={deleteFile}
       />
 

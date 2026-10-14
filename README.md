@@ -16,6 +16,9 @@ sin conexión.
 - **Importar**: abre archivos Guitar Pro (`.gp`, `.gpx`, `.gp5`, `.gp4`, `.gp3`) y MusicXML.
   Se guardan en el navegador, en «Mis archivos». Instalada en Chrome o Edge, Atril también
   abre esos archivos desde el sistema operativo.
+- **Abrir desde un enlace**: pega la URL de un archivo público en GitHub, Dropbox o cualquier web
+  que permita descargarlo desde otras páginas. Atril convierte los enlaces de GitHub y Dropbox en
+  su descarga directa. No funciona con Songsterr, Ultimate Guitar ni Google Drive, que no lo permiten.
 
 El buscador busca primero en la biblioteca local: el catálogo incluido (piezas tradicionales y
 ejercicios propios) y los archivos importados. Debajo ofrece la misma búsqueda en Songsterr,

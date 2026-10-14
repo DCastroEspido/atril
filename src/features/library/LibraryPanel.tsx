@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import { ImportIcon, StarIcon, StarOutlineIcon, TrashIcon } from '../../ui/icons';
+import { LinkImport } from '../import/LinkImport';
 import { ACCEPTED_FILES } from '../import/readScoreFile';
 import { OnlineSearch } from './OnlineSearch';
 import { searchLibrary } from './search';
@@ -14,10 +15,20 @@ interface Props {
   onOpen: (id: string) => void;
   onToggleFavorite: (id: string) => void;
   onImport: (file: File) => void;
+  onOpenLink: (link: string) => Promise<string | null>;
   onDelete: (id: string) => void;
 }
 
-export function LibraryPanel({ entries, currentId, favorites, onOpen, onToggleFavorite, onImport, onDelete }: Props) {
+export function LibraryPanel({
+  entries,
+  currentId,
+  favorites,
+  onOpen,
+  onToggleFavorite,
+  onImport,
+  onOpenLink,
+  onDelete,
+}: Props) {
   const [query, setQuery] = useState('');
   const [genre, setGenre] = useState<string | null>(null);
   const [level, setLevel] = useState<string | null>(null);
@@ -140,6 +151,7 @@ export function LibraryPanel({ entries, currentId, favorites, onOpen, onToggleFa
             e.target.value = '';
           }}
         />
+        <LinkImport onOpenLink={onOpenLink} />
         <p>
           Abre .gp, .gpx, .gp5, .gp4, .gp3 y MusicXML; también puedes arrastrarlos a la ventana. El catálogo trae piezas
           tradicionales y ejercicios propios.

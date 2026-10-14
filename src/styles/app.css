@@ -361,6 +361,26 @@ input[type='number'] {
 .lib-foot p {
   margin: 0;
 }
+.link-import {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+}
+.link-import .row {
+  display: flex;
+  gap: 6px;
+}
+.link-import input {
+  flex: 1;
+  min-width: 0;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 7px 10px;
+}
+.link-import .error {
+  color: var(--danger);
+}
 
 /* Stage */
 .stage {

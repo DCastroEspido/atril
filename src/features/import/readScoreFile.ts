@@ -3,16 +3,20 @@ import type { StoredScore } from '../../storage/scoreFiles';
 
 export const ACCEPTED_FILES = '.gp,.gp3,.gp4,.gp5,.gpx,.musicxml,.xml,.mxl';
 
-/** Reads a Guitar Pro or MusicXML file and checks alphaTab can open it before it is stored. */
-export async function readScoreFile(file: File): Promise<StoredScore> {
-  const bytes = await file.arrayBuffer();
+/** Checks alphaTab can open the bytes and builds the record to store. Throws when it cannot. */
+export function scoreFromBytes(bytes: ArrayBuffer, fileName: string): StoredScore {
   const score = importer.ScoreLoader.loadScoreFromBytes(new Uint8Array(bytes), new Settings());
   return {
     id: `file-${Date.now().toString(36)}`,
-    title: score.title || file.name.replace(/\.[^.]+$/, ''),
+    title: score.title || fileName.replace(/\.[^.]+$/, ''),
     artist: score.artist || '',
-    fileName: file.name,
+    fileName,
     addedAt: Date.now(),
     bytes,
   };
+}
+
+/** Reads a Guitar Pro or MusicXML file chosen or dropped by the user. */
+export async function readScoreFile(file: File): Promise<StoredScore> {
+  return scoreFromBytes(await file.arrayBuffer(), file.name);
 }
