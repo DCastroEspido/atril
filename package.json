@@ -1,0 +1,48 @@
+{
+  "name": "atril",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Reproductor de tablaturas con pistas de acompañamiento, velocidad y bucles. PWA instalable y offline.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint . && prettier --check .",
+    "typecheck": "tsc -b",
+    "check": "npm run typecheck && npm run lint && npm run test",
+    "icons": "pwa-assets-generator",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@coderline/alphatab": "1.8.4",
+    "@fontsource-variable/figtree": "^5.3.0",
+    "@fontsource/big-shoulders-display": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "idb": "^8.0.3",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@coderline/alphatab-vite": "1.8.4",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vite-pwa/assets-generator": "^1.0.4",
+    "@vitejs/plugin-react": "~6.1.1",
+    "eslint": "~10.11.0",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "globals": "^17.0.0",
+    "jsdom": "~30.1.1",
+    "prettier": "~3.9.9",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.0",
+    "vite": "~8.3.1",
+    "vite-plugin-pwa": "~1.3.0",
+    "vitest": "~5.0.2",
+    "workbox-window": "^7.4.1"
+  }
+}

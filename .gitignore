@@ -1,0 +1,10 @@
+node_modules
+dist
+dev-dist
+*.local
+.DS_Store
+coverage
+.playwright-mcp
+# copied from @coderline/alphatab by its Vite plugin on every build
+public/font
+public/soundfont

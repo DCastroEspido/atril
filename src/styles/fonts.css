@@ -1,0 +1,5 @@
+/* Self-hosted so the app keeps its type offline. Only the weights the design uses. */
+@import '@fontsource/big-shoulders-display/latin-800';
+@import '@fontsource-variable/figtree';
+@import '@fontsource/jetbrains-mono/latin-400';
+@import '@fontsource/jetbrains-mono/latin-600';

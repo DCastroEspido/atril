@@ -1,0 +1,6 @@
+dist
+dev-dist
+public
+package-lock.json
+# Song files are laid out like chord charts, one musical phrase per line.
+src/catalog/songs
