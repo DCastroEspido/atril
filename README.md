@@ -15,6 +15,9 @@ sin conexión.
 - **Reproductor**: la tablatura en una línea que avanza con la música (o en páginas), solo tab o tab con
   partitura, y debajo un mapa de la canción con lo denso que es cada compás; un clic salta a ese compás.
   Interruptores de metrónomo, cuenta atrás, bucle y «silenciar mi pista» para tocarla tú sobre la banda.
+- **Pantalla completa**: solo la tablatura, más grande, con parar y play. Mantiene la pantalla encendida
+  donde el navegador lo permite; en el iPhone usa toda la ventana porque Safari no deja poner otra cosa
+  que vídeos a pantalla completa.
 - **Consola**: tempo del 25 % al 150 % e instrumentos: para cada uno, si se ve en la tablatura, si suena,
   solo y volumen.
 - **Tema**: Claro, Oscuro o Sistema (sigue al dispositivo), desde la barra superior.

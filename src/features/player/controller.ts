@@ -28,6 +28,8 @@ export interface PlayerState {
   countIn: boolean;
   mix: TrackMix[];
   view: ScoreView;
+  /** Full-screen practice: only the tab and play/stop, drawn larger. */
+  focus: boolean;
 }
 
 /** How the score is drawn: one scrolling line or pages; tab only or tab with standard notation. */
@@ -57,6 +59,7 @@ const INITIAL: PlayerState = {
   countIn: false,
   mix: [],
   view: { layout: 'line', notation: 'tab' },
+  focus: false,
 };
 
 type Listener = () => void;
@@ -66,8 +69,13 @@ const SCORE_INK = '#4a1f1c';
 const SCORE_INK_SOFT = '#6a2e2a';
 const SCORE_LINES = '#8c6a5c';
 const SCORE_ACCENT = '#a2242f';
-/** The single line is the focus of the screen, so it is drawn larger than pages. */
-const scaleFor = (view: ScoreView) => (view.layout === 'line' ? 1.15 : 0.92);
+/** The single line is the focus of the screen, so it is drawn larger than pages; full screen larger still. */
+const scaleFor = (view: ScoreView, focus = false) => {
+  if (!focus) return view.layout === 'line' ? 1.15 : 0.92;
+  // A phone held upright fits few bars, so it gets a smaller step up than a wide screen.
+  const narrow = window.innerWidth < 700;
+  return view.layout === 'line' ? (narrow ? 1.3 : 1.6) : narrow ? 1 : 1.15;
+};
 const SCORE_FONT = '"Jost Variable", Jost, Futura, sans-serif';
 
 /**
@@ -266,17 +274,29 @@ export class PlayerController {
   }
 
   setView(patch: Partial<ScoreView>) {
-    const view = { ...this.state.view, ...patch };
+    this.set({ view: { ...this.state.view, ...patch } });
+    this.relayout();
+  }
+
+  /** Enter or leave full-screen practice. */
+  setFocus(focus: boolean) {
+    if (focus === this.state.focus) return;
+    this.set({ focus });
+    this.relayout();
+  }
+
+  /** Applies view and focus to alphaTab's settings and draws the score again. */
+  private relayout() {
+    const { view, focus, range } = this.state;
     const { display } = this.api.settings;
     display.layoutMode = view.layout === 'line' ? LayoutMode.Horizontal : LayoutMode.Page;
     display.staveProfile = view.notation === 'tab' ? StaveProfile.Tab : StaveProfile.Default;
-    display.scale = scaleFor(view);
+    display.scale = scaleFor(view, focus);
     // The highlight belongs to beats drawn now; draw it again after the new layout.
-    if (this.state.range) {
-      this.rehighlight = this.state.range;
-      this.dropSelection(this.state.range.from);
+    if (range) {
+      this.rehighlight = range;
+      this.dropSelection(range.from);
     }
-    this.set({ view });
     this.api.updateSettings();
     this.api.render();
   }
