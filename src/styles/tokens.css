@@ -1,47 +1,64 @@
-/* Practice-room console: library rail on the left, a paper score on a slate desk, transport docked under it. */
+/*
+ * Mid-century hi-fi: warm paper grounds, chocolate rules, a brown-red primary,
+ * hunter green as the complement, light bronze only for flat offset shadows and fills.
+ * Layout: library rail | record-sleeve header, mixer, score paper | docked transport and practice modules.
+ */
 :root {
-  --bg: #e6e9ec;
-  --surface: #f6f7f8;
-  --raised: #ffffff;
-  --ink: #14181d;
-  --muted: #5b6570;
-  --line: #d0d6dc;
-  --accent: #2346b8;
-  --accent-ink: #ffffff;
-  --accent-soft: #dfe5f7;
-  --loop: #b9740a;
-  --loop-soft: #f6e6c8;
-  --danger: #b4232a;
-  --ok: #2f7a3e;
-  /* The score is always printed paper, in both themes. */
-  --paper: #fffefb;
-  --paper-ink: #1b1b1b;
-  --paper-edge: rgba(20, 24, 29, 0.1);
+  /* palette */
+  --pearl: #f4e4c1;
+  --bronze: #e6af91;
+  --chocolate: #6a2e2a;
+  --brown-red: #a2242f;
+  --hunter: #3a5a40;
 
-  --font-display: 'Big Shoulders Display', 'Arial Narrow', 'Roboto Condensed', sans-serif;
-  --font-body: 'Figtree Variable', 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
-  --r: 10px;
-  --r-sm: 6px;
+  /* roles */
+  --ground: var(--pearl);
+  --surface: #faf1dc;
+  --sunk: #ecd6a9;
+  --ink: var(--chocolate);
+  --ink-soft: #84514a;
+  --line: color-mix(in srgb, var(--chocolate) 22%, transparent);
+  --rule: var(--chocolate);
+  --primary: var(--brown-red);
+  --on-primary: var(--pearl);
+  --complement: var(--hunter);
+  --on-complement: var(--pearl);
+  --shadow-color: var(--bronze);
+  --hover: color-mix(in srgb, var(--bronze) 35%, transparent);
+  --selected: color-mix(in srgb, var(--brown-red) 12%, var(--surface));
+
+  /* The score is printed paper in both themes. */
+  --paper: #fbf4e4;
+  --paper-ink: #4a1f1c;
+
+  --font-ui: 'Jost Variable', 'Jost', 'Futura', 'Century Gothic', system-ui, sans-serif;
+  --font-brand: 'Yellowtail', 'Brush Script MT', cursive;
+  --font-num: 'DM Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --r: 18px;
+  --r-pill: 999px;
+  --shadow: 4px 4px 0 var(--shadow-color);
+  --shadow-sm: 2px 2px 0 var(--shadow-color);
   color-scheme: light;
 }
 
+/* After hours: the same hi-fi on a chocolate ground. */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #101316;
-    --surface: #181c21;
-    --raised: #20262c;
-    --ink: #e8ebee;
-    --muted: #9aa4ae;
-    --line: #2c343c;
-    --accent: #86a2ff;
-    --accent-ink: #0d1222;
-    --accent-soft: #232d4d;
-    --loop: #f0b44a;
-    --loop-soft: #3a2e17;
-    --danger: #ff7b7b;
-    --ok: #7fd18f;
-    --paper-edge: rgba(0, 0, 0, 0.5);
+    --ground: #2a1513;
+    --surface: #3a201c;
+    --sunk: #221110;
+    --ink: var(--pearl);
+    --ink-soft: #cdb89a;
+    --line: color-mix(in srgb, var(--pearl) 18%, transparent);
+    --rule: color-mix(in srgb, var(--pearl) 55%, transparent);
+    --primary: #e66f75;
+    --on-primary: #2a1513;
+    --complement: #9cc3a0;
+    --on-complement: #2a1513;
+    --shadow-color: #120807;
+    --hover: color-mix(in srgb, var(--bronze) 16%, transparent);
+    --selected: color-mix(in srgb, #e66f75 18%, var(--surface));
     color-scheme: dark;
   }
 }

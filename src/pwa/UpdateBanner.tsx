@@ -21,10 +21,10 @@ export function UpdateBanner() {
   return (
     <div className="update" role="alert">
       <span>Hay una versión nueva de Atril.</span>
-      <button className="btn mini primary" onClick={() => updateServiceWorker(true)}>
+      <button className="pill primary" onClick={() => updateServiceWorker(true)}>
         Actualizar
       </button>
-      <button className="btn mini" onClick={() => setNeedRefresh(false)}>
+      <button className="text-btn" onClick={() => setNeedRefresh(false)}>
         Luego
       </button>
     </div>

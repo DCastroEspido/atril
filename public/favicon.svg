@@ -1,8 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#2346b8"/>
-  <g stroke="#ffffff" stroke-opacity=".28" stroke-width="10">
-    <path d="M64 168h384M64 216h384M64 264h384M64 312h384M64 360h384"/>
+  <rect width="512" height="512" rx="112" fill="#f4e4c1"/>
+  <circle cx="256" cy="268" r="180" fill="#6a2e2a"/>
+  <g fill="none" stroke="#f4e4c1" stroke-opacity=".16" stroke-width="5">
+    <circle cx="256" cy="268" r="160"/>
+    <circle cx="256" cy="268" r="140"/>
+    <circle cx="256" cy="268" r="120"/>
+    <circle cx="256" cy="268" r="100"/>
   </g>
-  <path d="M256 92c-86 0-140 34-140 92 0 74 70 170 140 236 70-66 140-162 140-236 0-58-54-92-140-92z" fill="#ffffff"/>
-  <path d="M206 330l50-170 50 170M224 272h64" fill="none" stroke="#2346b8" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="256" cy="268" r="70" fill="#a2242f"/>
+  <circle cx="256" cy="268" r="11" fill="#f4e4c1"/>
+  <path fill="#3a5a40" d="M404 62l9 33 27-20-20 27 33 9-33 9 20 27-27-20-9 33-9-33-27 20 20-27-33-9 33-9-20-27 27 20z"/>
 </svg>

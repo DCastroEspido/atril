@@ -12,7 +12,7 @@ import { Mixer } from './features/player/Mixer';
 import { PlayerContext } from './features/player/PlayerContext';
 import { ScoreView } from './features/player/ScoreView';
 import { SongHeader } from './features/player/SongHeader';
-import { Transport } from './features/player/Transport';
+import { PracticePanel, Transport } from './features/player/Transport';
 import { UpdateBanner } from './pwa/UpdateBanner';
 import { useInstallPrompt } from './pwa/useInstallPrompt';
 import { readPref, writePref } from './storage/prefs';
@@ -122,7 +122,7 @@ export function App() {
     <div className={`app${libOpen ? ' lib-open' : ''}`}>
       <header className="top">
         <button
-          className="btn lib-toggle"
+          className="pill lib-toggle"
           aria-controls="lib"
           aria-expanded={libOpen}
           onClick={() => setLibOpen(!libOpen)}
@@ -131,11 +131,12 @@ export function App() {
           Biblioteca
         </button>
         <div className="brand">
+          <span className="starburst" aria-hidden="true" />
           <h1>Atril</h1>
-          <span>tablaturas para practicar con banda</span>
+          <span className="tagline">tablaturas para tocar con banda</span>
         </div>
         {install && (
-          <button className="btn" onClick={install}>
+          <button className="pill ghost" onClick={install}>
             <InstallIcon />
             Instalar
           </button>
@@ -143,6 +144,7 @@ export function App() {
         <FavoritesSelect favorites={favoriteEntries} currentId={currentId} onOpen={open} />
       </header>
 
+      {libOpen && <div className="scrim" onClick={() => setLibOpen(false)} aria-hidden="true" />}
       <LibraryPanel
         entries={library.entries}
         currentId={currentId}
@@ -162,7 +164,10 @@ export function App() {
               favorite={favorites.includes(currentId)}
               onToggleFavorite={() => toggleFavorite(currentId)}
             />
-            <Mixer />
+            <aside className="rail" aria-label="Consola de práctica">
+              <PracticePanel />
+              <Mixer />
+            </aside>
           </PlayerContext.Provider>
         )}
         <ScoreView player={player} onPlayer={setPlayer} />

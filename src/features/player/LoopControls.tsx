@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { LoopIcon } from '../../ui/icons';
+import { Switch } from '../../ui/Switch';
 import { usePlayer, usePlayerState } from './PlayerContext';
 import { sectionsOf } from './scoreNav';
 
@@ -21,16 +21,17 @@ export function LoopControls() {
   };
 
   return (
-    <div className={`group loopbox${looping ? ' on' : ''}`}>
-      <button className="btn mini" aria-pressed={looping} onClick={() => player.setLooping(!looping)}>
-        <LoopIcon />
-        Bucle
-      </button>
-      <label className="side-label" htmlFor="sectionSel">
+    <div className="module loop" data-on={looping}>
+      <div className="module-head">
+        <h3 className="eyebrow">Bucle</h3>
+        <Switch label={looping ? 'Activo' : 'Apagado'} checked={looping} onChange={(on) => player.setLooping(on)} />
+      </div>
+      <label className="visually-hidden" htmlFor="sectionSel">
         Sección
       </label>
       <select
         id="sectionSel"
+        className="select"
         disabled={!sections.length}
         value={sectionIndex >= 0 ? String(sectionIndex) : ''}
         onChange={(e) => {
@@ -41,53 +42,55 @@ export function LoopControls() {
           }
         }}
       >
-        <option value="">{sections.length ? 'Elige sección' : 'Sin secciones'}</option>
+        <option value="">{sections.length ? 'Repetir una sección…' : 'Sin secciones'}</option>
         {sections.map((s, i) => (
           <option key={i} value={i}>
             {`${s.name} · c. ${s.from}–${s.to}`}
           </option>
         ))}
       </select>
-      <label className="side-label" htmlFor="barFrom">
-        Compases
-      </label>
-      <input
-        type="number"
-        id="barFrom"
-        className="bars-in"
-        min={1}
-        max={bars}
-        value={from}
-        aria-label="Desde el compás"
-        onChange={(e) => setDraft({ from: e.target.value, to })}
-        onKeyDown={(e) => e.key === 'Enter' && apply()}
-      />
-      <span aria-hidden="true">–</span>
-      <input
-        type="number"
-        id="barTo"
-        className="bars-in"
-        min={1}
-        max={bars}
-        value={to}
-        aria-label="Hasta el compás"
-        onChange={(e) => setDraft({ from, to: e.target.value })}
-        onKeyDown={(e) => e.key === 'Enter' && apply()}
-      />
-      <button className="btn mini" onClick={apply} disabled={!score}>
-        Fijar
-      </button>
-      <button
-        className="btn mini"
-        onClick={() => {
-          setDraft(null);
-          player.clearLoop();
-        }}
-        disabled={!range}
-      >
-        Quitar
-      </button>
-      <span className="loophint">o arrastra sobre la partitura</span>
+      <div className="bars-row">
+        <span className="eyebrow">Compases</span>
+        <input
+          type="number"
+          id="barFrom"
+          className="num"
+          min={1}
+          max={bars}
+          value={from}
+          aria-label="Desde el compás"
+          onChange={(e) => setDraft({ from: e.target.value, to })}
+          onKeyDown={(e) => e.key === 'Enter' && apply()}
+        />
+        <span aria-hidden="true">–</span>
+        <input
+          type="number"
+          id="barTo"
+          className="num"
+          min={1}
+          max={bars}
+          value={to}
+          aria-label="Hasta el compás"
+          onChange={(e) => setDraft({ from, to: e.target.value })}
+          onKeyDown={(e) => e.key === 'Enter' && apply()}
+        />
+        <button className="pill" onClick={apply} disabled={!score}>
+          Fijar
+        </button>
+      </div>
+      <div className="loop-foot">
+        <span className="hint">o arrastra sobre la partitura</span>
+        <button
+          className="text-btn"
+          onClick={() => {
+            setDraft(null);
+            player.clearLoop();
+          }}
+          disabled={!range}
+        >
+          Quitar
+        </button>
+      </div>
     </div>
   );
 }

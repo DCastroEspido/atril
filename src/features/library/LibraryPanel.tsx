@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { ImportIcon, StarIcon, StarOutlineIcon, TrashIcon } from '../../ui/icons';
+import { ImportIcon, SearchIcon, StarIcon, StarOutlineIcon, TrashIcon } from '../../ui/icons';
 import { LinkImport } from '../import/LinkImport';
 import { ACCEPTED_FILES } from '../import/readScoreFile';
 import { OnlineSearch } from './OnlineSearch';
@@ -19,16 +19,8 @@ interface Props {
   onDelete: (id: string) => void;
 }
 
-export function LibraryPanel({
-  entries,
-  currentId,
-  favorites,
-  onOpen,
-  onToggleFavorite,
-  onImport,
-  onOpenLink,
-  onDelete,
-}: Props) {
+export function LibraryPanel(props: Props) {
+  const { entries, currentId, favorites, onOpen, onToggleFavorite, onImport, onOpenLink, onDelete } = props;
   const [query, setQuery] = useState('');
   const [genre, setGenre] = useState<string | null>(null);
   const [level, setLevel] = useState<string | null>(null);
@@ -45,15 +37,19 @@ export function LibraryPanel({
   return (
     <aside className="lib" id="lib" aria-label="Biblioteca">
       <div className="lib-head">
-        <h2 className="side-label">Buscar tablaturas</h2>
-        <input
-          type="search"
-          id="q"
-          placeholder="Título, autor, estilo, técnica…"
-          autoComplete="off"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
+        <h2 className="eyebrow">Biblioteca</h2>
+        <div className="search">
+          <SearchIcon />
+          <input
+            type="search"
+            id="q"
+            placeholder="Título, autor, estilo, técnica…"
+            autoComplete="off"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            aria-label="Buscar tablaturas"
+          />
+        </div>
         <div className="chips" role="group" aria-label="Filtrar por estilo">
           {[null, ...genres].map((g) => (
             <button key={g ?? 'all'} className="chip" aria-pressed={genre === g} onClick={() => setGenre(g)}>
@@ -61,11 +57,12 @@ export function LibraryPanel({
             </button>
           ))}
         </div>
-        <div className="chips" role="group" aria-label="Filtrar por nivel">
+        <div className="chips levels" role="group" aria-label="Filtrar por nivel">
           {LEVELS.map((l) => (
             <button
               key={l}
               className="chip"
+              data-l={l}
               aria-pressed={level === l}
               onClick={() => setLevel(level === l ? null : l)}
             >
@@ -80,7 +77,7 @@ export function LibraryPanel({
           {results.length === 0 && (
             <li className="empty">
               {genre === IMPORTED_GENRE && importedCount === 0
-                ? 'Aún no has importado archivos. Usa «Importar Guitar Pro» o arrastra un .gp a la ventana.'
+                ? 'Aún no has importado archivos. Usa «Importar archivo», pega un enlace o arrastra un .gp a la ventana.'
                 : query.trim()
                   ? 'No está en tu biblioteca. Búscala en internet:'
                   : 'Nada coincide con estos filtros.'}
@@ -91,18 +88,21 @@ export function LibraryPanel({
             const imported = e.source.kind === 'file';
             return (
               <li key={e.id} className={e.id === currentId ? 'active' : undefined}>
-                <button className="item" onClick={() => onOpen(e.id)}>
-                  <span className="t">{e.title}</span>
-                  <span className="a">{imported ? e.artist || e.tags[0] : `${e.artist} · ${e.genre}`}</span>
-                  <span className="m">
-                    <span className="lvl" data-l={e.level}>
-                      {e.level}
+                <button className="item" onClick={() => onOpen(e.id)} aria-current={e.id === currentId}>
+                  <span className="disc" data-genre={e.genre} aria-hidden="true" />
+                  <span className="text">
+                    <span className="t">{e.title}</span>
+                    <span className="a">{imported ? e.artist || e.tags[0] : e.artist}</span>
+                    <span className="m">
+                      <span className="lvl" data-l={e.level}>
+                        {e.level}
+                      </span>
+                      {!imported && <span>{`${e.key} · ${e.timeLabel} · ${e.tempo} bpm`}</span>}
                     </span>
-                    {!imported && <span>{`${e.key} · ${e.timeLabel} · ${e.tempo} bpm`}</span>}
                   </span>
                 </button>
                 <button
-                  className="star"
+                  className="icon-btn star"
                   aria-pressed={fav}
                   aria-label={fav ? `Quitar ${e.title} de favoritas` : `Añadir ${e.title} a favoritas`}
                   onClick={() => onToggleFavorite(e.id)}
@@ -112,7 +112,7 @@ export function LibraryPanel({
                 {imported &&
                   (confirming === e.id ? (
                     <button
-                      className="del confirm"
+                      className="icon-btn confirm"
                       onClick={() => {
                         setConfirming(null);
                         onDelete(e.id);
@@ -122,7 +122,7 @@ export function LibraryPanel({
                       Borrar
                     </button>
                   ) : (
-                    <button className="del" aria-label={`Borrar ${e.title}`} onClick={() => setConfirming(e.id)}>
+                    <button className="icon-btn" aria-label={`Borrar ${e.title}`} onClick={() => setConfirming(e.id)}>
                       <TrashIcon />
                     </button>
                   ))}
@@ -134,9 +134,9 @@ export function LibraryPanel({
       </div>
 
       <div className="lib-foot">
-        <button className="btn" onClick={() => fileInput.current?.click()}>
+        <button className="pill wide" onClick={() => fileInput.current?.click()}>
           <ImportIcon />
-          Importar Guitar Pro
+          Importar archivo
         </button>
         <input
           ref={fileInput}
@@ -152,9 +152,9 @@ export function LibraryPanel({
           }}
         />
         <LinkImport onOpenLink={onOpenLink} />
-        <p>
-          Abre .gp, .gpx, .gp5, .gp4, .gp3 y MusicXML; también puedes arrastrarlos a la ventana. El catálogo trae piezas
-          tradicionales y ejercicios propios.
+        <p className="fine">
+          Guitar Pro (.gp, .gpx, .gp5, .gp4, .gp3) y MusicXML. El catálogo trae piezas tradicionales y ejercicios
+          propios.
         </p>
       </div>
     </aside>

@@ -1,4 +1,4 @@
-import { StarIcon } from '../../ui/icons';
+import { StarIcon, StarOutlineIcon } from '../../ui/icons';
 import type { LibraryEntry } from '../library/types';
 import { usePlayer, usePlayerState } from './PlayerContext';
 
@@ -8,6 +8,7 @@ interface Props {
   onToggleFavorite: () => void;
 }
 
+/** The record sleeve: label art, title and the song's facts. */
 export function SongHeader({ entry, favorite, onToggleFavorite }: Props) {
   const { score } = usePlayerState(usePlayer())!;
   const first = score?.masterBars[0];
@@ -19,9 +20,11 @@ export function SongHeader({ entry, favorite, onToggleFavorite }: Props) {
   ];
   return (
     <section className="songhead">
+      <div className="label-art" data-genre={entry?.genre} aria-hidden="true" />
       <div className="titles">
+        <p className="eyebrow">{entry ? `${entry.genre} · ${entry.level}` : ' '}</p>
         <h2>{score?.title || entry?.title || 'Cargando…'}</h2>
-        <div className="by">{score?.artist || entry?.artist || ' '}</div>
+        <p className="by">{score?.artist || entry?.artist || ' '}</p>
       </div>
       <dl className="facts">
         {facts.map(([k, v]) => (
@@ -31,9 +34,9 @@ export function SongHeader({ entry, favorite, onToggleFavorite }: Props) {
           </div>
         ))}
       </dl>
-      <button className="btn" aria-pressed={favorite} onClick={onToggleFavorite} disabled={!entry}>
-        <StarIcon />
-        <span>{favorite ? 'En favoritas' : 'Añadir a favoritas'}</span>
+      <button className="fav-btn" aria-pressed={favorite} onClick={onToggleFavorite} disabled={!entry}>
+        {favorite ? <StarIcon /> : <StarOutlineIcon />}
+        <span>{favorite ? 'En favoritas' : 'Favorita'}</span>
       </button>
     </section>
   );

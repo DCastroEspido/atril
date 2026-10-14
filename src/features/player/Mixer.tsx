@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Range } from '../../ui/Range';
+import { Segmented } from '../../ui/Segmented';
 import { useToast } from '../../ui/Toast';
 import { usePlayer, usePlayerState } from './PlayerContext';
 
@@ -22,6 +24,13 @@ const GM: Record<number, string> = {
   49: 'cuerdas',
 };
 
+type Toggle = 'v' | 'm' | 's';
+const TOGGLES = [
+  { value: 'v' as const, label: 'Ver', title: 'Mostrar en la partitura' },
+  { value: 'm' as const, label: 'Mute', title: 'Silenciar' },
+  { value: 's' as const, label: 'Solo', title: 'Dejarla sola' },
+];
+
 export function Mixer() {
   const player = usePlayer();
   const { score, mix } = usePlayerState(player)!;
@@ -30,10 +39,17 @@ export function Mixer() {
   const [open, setOpen] = useState(() => !window.matchMedia('(max-width: 860px)').matches);
   if (!score) return null;
 
+  const toggle = (i: number, t: Toggle) => {
+    if (t === 'v' && !player.toggleVisible(i)) toast('Deja al menos una pista visible');
+    if (t === 'm') player.toggleMute(i);
+    if (t === 's') player.toggleSolo(i);
+  };
+
   return (
-    <details className="mixer" open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
+    <details className="mixer card" open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
       <summary>
-        Pistas <span className="hint">· V la muestra en la partitura, M la silencia, S la deja sola</span>
+        <span className="eyebrow">Pistas</span>
+        <span className="hint">{score.tracks.length} instrumentos · elige qué ver y qué suena</span>
       </summary>
       <div className="tracks">
         {score.tracks.map((t, i) => {
@@ -42,34 +58,32 @@ export function Mixer() {
           const instrument = t.isPercussion
             ? 'batería'
             : (GM[t.playbackInfo.program] ?? `programa ${t.playbackInfo.program}`);
+          const on: Toggle[] = [
+            ...(m.visible ? ['v' as const] : []),
+            ...(m.mute ? ['m' as const] : []),
+            ...(m.solo ? ['s' as const] : []),
+          ];
           return (
-            <div className="trk" key={i}>
+            <div className="trk" key={i} data-muted={m.mute}>
               <div className="nm">
-                {t.name || `Pista ${i + 1}`}
+                <strong>{t.name || `Pista ${i + 1}`}</strong>
                 <small>{instrument}</small>
               </div>
-              <button
-                className="tog v"
-                aria-pressed={m.visible}
-                title="Ver en la partitura"
-                onClick={() => player.toggleVisible(i) || toast('Deja al menos una pista visible')}
-              >
-                V
-              </button>
-              <button className="tog m" aria-pressed={m.mute} title="Silenciar" onClick={() => player.toggleMute(i)}>
-                M
-              </button>
-              <button className="tog s" aria-pressed={m.solo} title="Solo" onClick={() => player.toggleSolo(i)}>
-                S
-              </button>
-              <input
-                type="range"
+              <Segmented
+                label={`Opciones de ${t.name}`}
+                className="vms"
+                options={TOGGLES}
+                selected={on}
+                onSelect={(v) => toggle(i, v)}
+              />
+              <Range
                 id={`vol-${i}`}
                 min={0}
                 max={200}
                 step={5}
                 value={m.volume}
                 aria-label={`Volumen de ${t.name}`}
+                title={`Volumen ${m.volume}%`}
                 onChange={(e) => player.setVolume(i, Number(e.target.value))}
               />
               <output htmlFor={`vol-${i}`}>{m.volume}%</output>

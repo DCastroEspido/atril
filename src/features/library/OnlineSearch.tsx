@@ -10,7 +10,7 @@ export function OnlineSearch({ query, prominent }: { query: string; prominent: b
 
   return (
     <section className={`online${prominent ? ' prominent' : ''}`} aria-label="Buscar en internet">
-      <h3 className="side-label">Buscar «{text}» en internet</h3>
+      <h3 className="eyebrow">Buscar «{text}» en internet</h3>
       {online ? (
         <ul>
           {ONLINE_SOURCES.map((s) => (

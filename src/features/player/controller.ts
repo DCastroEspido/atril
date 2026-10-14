@@ -53,6 +53,13 @@ const INITIAL: PlayerState = {
 
 type Listener = () => void;
 
+// alphaTab draws to SVG with its own colours; these match --paper-ink and the palette in tokens.css.
+const SCORE_INK = '#4a1f1c';
+const SCORE_INK_SOFT = '#6a2e2a';
+const SCORE_LINES = '#8c6a5c';
+const SCORE_ACCENT = '#a2242f';
+const SCORE_FONT = '"Jost Variable", Jost, Futura, sans-serif';
+
 /**
  * Owns one alphaTab instance and exposes its state as plain snapshots,
  * so React (or anything else) can subscribe without touching alphaTab events.
@@ -70,7 +77,40 @@ export class PlayerController {
     const base = import.meta.env.BASE_URL;
     this.api = new AlphaTabApi(container, {
       core: { fontDirectory: `${base}font/`, logLevel: 'warning' },
-      display: { layoutMode: 'page', scale: 0.92 },
+      display: {
+        layoutMode: 'page',
+        scale: 0.92,
+        // Printed in chocolate ink on the paper the page draws behind it.
+        resources: {
+          mainGlyphColor: SCORE_INK,
+          secondaryGlyphColor: SCORE_INK_SOFT,
+          staffLineColor: SCORE_LINES,
+          barSeparatorColor: SCORE_LINES,
+          barNumberColor: SCORE_ACCENT,
+          scoreInfoColor: SCORE_INK,
+          effectFont: `italic 12px ${SCORE_FONT}`,
+          fingeringFont: `14px ${SCORE_FONT}`,
+          tablatureFont: `13px ${SCORE_FONT}`,
+          graceFont: `11px ${SCORE_FONT}`,
+        },
+      },
+      // The song header above the paper already shows title and artist.
+      notation: {
+        elements: new Map(
+          (
+            [
+              'ScoreTitle',
+              'ScoreSubTitle',
+              'ScoreArtist',
+              'ScoreAlbum',
+              'ScoreWords',
+              'ScoreMusic',
+              'ScoreWordsAndMusic',
+              'ScoreCopyright',
+            ] as const
+          ).map((k) => [k, false] as const),
+        ),
+      },
       player: {
         playerMode: 'enabledsynthesizer',
         soundFont: `${base}soundfont/sonivox.sf2`,

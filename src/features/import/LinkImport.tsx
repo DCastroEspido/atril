@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { LinkIcon } from '../../ui/icons';
 import { useOnline } from '../library/useOnline';
 
 interface Props {
@@ -26,10 +27,11 @@ export function LinkImport({ onOpenLink }: Props) {
 
   return (
     <form className="link-import" onSubmit={submit}>
-      <label className="side-label" htmlFor="scoreLink">
+      <label className="eyebrow" htmlFor="scoreLink">
         Abrir desde un enlace
       </label>
-      <div className="row">
+      <div className="field">
+        <LinkIcon />
         <input
           id="scoreLink"
           type="url"
@@ -43,7 +45,7 @@ export function LinkImport({ onOpenLink }: Props) {
           }}
           aria-describedby="scoreLinkHelp"
         />
-        <button className="btn" type="submit" disabled={!online || busy || !link.trim()}>
+        <button className="pill" type="submit" disabled={!online || busy || !link.trim()}>
           {busy ? 'Abriendo…' : 'Abrir'}
         </button>
       </div>
@@ -52,9 +54,9 @@ export function LinkImport({ onOpenLink }: Props) {
           {error}
         </p>
       ) : (
-        <p id="scoreLinkHelp">
+        <p className="fine" id="scoreLinkHelp">
           {online
-            ? 'Archivos públicos en GitHub, Dropbox o webs que permitan descargarlos. No sirve con Songsterr, Ultimate Guitar ni Google Drive.'
+            ? 'Archivos públicos de GitHub, Dropbox o webs que lo permitan. Songsterr, Ultimate Guitar y Google Drive no lo permiten.'
             : 'Necesita conexión.'}
         </p>
       )}
