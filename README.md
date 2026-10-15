@@ -101,7 +101,7 @@ común. Sin él (variables vacías), funciona como antes: todo se queda en el na
 | Avanzado   | Lo anterior y compartir tablaturas con todos                                           |
 | Admin      | Lo anterior, aprobar solicitudes, ocultar o borrar canciones compartidas               |
 
-Se entra sin contraseña, con un enlace al correo. Las reglas viven en la base de datos (row level
+Se entra con Google o, sin contraseña, con un enlace al correo. Las reglas viven en la base de datos (row level
 security en `supabase/migrations/`), no en la app: aunque alguien manipule el navegador, no puede
 saltárselas.
 
@@ -125,6 +125,12 @@ npm run db:push:prod      # cuando todo pasa: producción, y el revisor de segur
 Los scripts usan la sesión de la CLI de Supabase (`supabase login`) y sacan las claves de ahí, sin
 guardarlas en el repo. Los proyectos gratuitos se pausan tras una semana sin uso; se reactivan desde el
 panel.
+
+### Acceso con Google
+
+El cliente OAuth vive en Google Cloud (proyecto «Atril»), con las direcciones de vuelta
+`https://<ref>.supabase.co/auth/v1/callback` de los dos proyectos. Su ID y su secreto van en
+`supabase/.env` (ignorado por git), que la CLI lee al ejecutar `supabase config push`.
 
 ### Pendiente en producción
 
