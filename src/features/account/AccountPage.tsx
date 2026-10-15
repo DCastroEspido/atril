@@ -28,37 +28,8 @@ import { useAccount } from './AccountContext';
 import { Avatar } from './Avatar';
 
 function SignIn() {
-  const { sendMagicLink, signInWithGoogle } = useAccount();
-  const [email, setEmail] = useState('');
-  const [sent, setSent] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const { signInWithGoogle } = useAccount();
   const [error, setError] = useState<string | null>(null);
-
-  const submit = async (e: FormEvent) => {
-    e.preventDefault();
-    setBusy(true);
-    setError(null);
-    try {
-      await sendMagicLink(email);
-      setSent(email.trim());
-    } catch {
-      setError('No he podido enviar el enlace. Revisa el correo o inténtalo en unos minutos.');
-    }
-    setBusy(false);
-  };
-
-  if (sent)
-    return (
-      <section className="card panel account-card">
-        <h3>Mira tu correo</h3>
-        <p>
-          Te he enviado un enlace a <strong>{sent}</strong>. Ábrelo en este dispositivo y entrarás directamente.
-        </p>
-        <button className="text-btn" onClick={() => setSent(null)}>
-          Usar otro correo
-        </button>
-      </section>
-    );
 
   const google = async () => {
     setError(null);
@@ -77,29 +48,6 @@ function SignIn() {
         <GoogleMark />
         Continuar con Google
       </button>
-      <div className="or" aria-hidden="true">
-        <span>o con un enlace en tu correo</span>
-      </div>
-      <form className="signin" onSubmit={submit}>
-        <label className="visually-hidden" htmlFor="email">
-          Correo electrónico
-        </label>
-        <div className="row">
-          <input
-            id="email"
-            className="text-input"
-            type="email"
-            autoComplete="email"
-            required
-            placeholder="tu@correo.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <button className="pill" type="submit" disabled={busy}>
-            {busy ? 'Enviando…' : 'Enviar enlace'}
-          </button>
-        </div>
-      </form>
       {error && (
         <p className="error" role="alert">
           {error}

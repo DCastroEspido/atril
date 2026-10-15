@@ -101,7 +101,7 @@ común. Sin él (variables vacías), funciona como antes: todo se queda en el na
 | Avanzado   | Lo anterior y compartir tablaturas con todos                                           |
 | Admin      | Lo anterior, aprobar solicitudes, ocultar o borrar canciones compartidas               |
 
-Se entra con Google o, sin contraseña, con un enlace al correo. Las reglas viven en la base de datos (row level
+Se entra con Google. Las reglas viven en la base de datos (row level
 security en `supabase/migrations/`), no en la app: aunque alguien manipule el navegador, no puede
 saltárselas.
 
@@ -132,12 +132,11 @@ El cliente OAuth vive en Google Cloud (proyecto «Atril»), con las direcciones 
 `https://<ref>.supabase.co/auth/v1/callback` de los dos proyectos. Su ID y su secreto van en
 `supabase/.env` (ignorado por git), que la CLI lee al ejecutar `supabase config push`.
 
-### Pendiente en producción
+### Administradores
 
-- Configurar un SMTP propio (Resend, Brevo…) en Authentication → SMTP. Sin él, Supabase solo envía unos
-  pocos enlaces por hora y solo a los miembros de la organización.
-- Hacerse admin tras el primer acceso, desde el SQL editor:
-  `update public.profiles set role = 'admin' where id = (select id from auth.users where email = '…');`
+Los demás admins se nombran desde el panel de administración del perfil. Para recuperar el acceso de admin
+sin ninguno disponible, desde el SQL editor:
+`update public.profiles set role = 'admin' where id = (select id from auth.users where email = '…');`
 
 Las tablaturas compartidas son públicas: cualquiera puede verlas y descargarlas. Al publicar, Atril pide
 confirmar que la tablatura es propia, de dominio público o con permiso, y el admin puede ocultarla o

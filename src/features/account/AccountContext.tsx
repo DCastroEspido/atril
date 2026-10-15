@@ -14,7 +14,6 @@ export interface Account {
   canPublish: boolean;
   isAdmin: boolean;
   refreshProfile: () => Promise<void>;
-  sendMagicLink: (email: string) => Promise<void>;
   /** Leaves the page for Google's sign-in and comes back signed in. */
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -63,15 +62,6 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     };
   }, [userId]);
 
-  const sendMagicLink = useCallback(async (email: string) => {
-    if (!supabase) return;
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      options: { emailRedirectTo: `${window.location.origin}${import.meta.env.BASE_URL}` },
-    });
-    if (error) throw error;
-  }, []);
-
   const signInWithGoogle = useCallback(async () => {
     if (!supabase) return;
     const { error } = await supabase.auth.signInWithOAuth({
@@ -94,11 +84,10 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       canPublish: profile?.role === 'advanced' || profile?.role === 'admin',
       isAdmin: profile?.role === 'admin',
       refreshProfile,
-      sendMagicLink,
       signInWithGoogle,
       signOut,
     }),
-    [session, profile, refreshProfile, sendMagicLink, signInWithGoogle, signOut],
+    [session, profile, refreshProfile, signInWithGoogle, signOut],
   );
   return <AccountContext.Provider value={value}>{children}</AccountContext.Provider>;
 }
