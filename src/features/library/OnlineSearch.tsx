@@ -26,9 +26,15 @@ export function OnlineSearch({ query, prominent }: { query: string; prominent: b
           ))}
         </ul>
       ) : (
-        <p>Sin conexión. Cuando vuelvas a tenerla podrás buscar en Songsterr, Ultimate Guitar y 911Tabs.</p>
+        <p>
+          Sin conexión. Cuando vuelvas a tenerla podrás buscar en{' '}
+          {new Intl.ListFormat('es').format(ONLINE_SOURCES.map((s) => s.name))}.
+        </p>
       )}
-      <p>Se abre en su web. Para practicarla aquí, descarga su archivo Guitar Pro e impórtalo.</p>
+      <p>
+        Se abre en su web. Para practicarla aquí, descarga su archivo Guitar Pro e impórtalo (o arrástralo); con tu
+        cuenta iniciada queda guardado como canción privada.
+      </p>
     </section>
   );
 }

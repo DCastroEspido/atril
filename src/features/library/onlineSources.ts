@@ -23,6 +23,11 @@ export const ONLINE_SOURCES: OnlineSource[] = [
     url: (query) => `https://www.ultimate-guitar.com/search.php?search_type=title&value=${q(query)}`,
   },
   {
+    name: 'GProTab',
+    note: 'archivos Guitar Pro para descargar',
+    url: (query) => `https://gprotab.net/en/search?q=${q(query)}`,
+  },
+  {
     name: '911Tabs',
     note: 'buscador de varias webs de tabs',
     url: (query) => `https://www.911tabs.com/search.php?search=${q(query)}`,
