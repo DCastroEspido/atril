@@ -60,3 +60,4 @@ export const ThumbDownIcon = icon(
 );
 export const UserIcon = icon('M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.4 0-8 2.2-8 5v3h16v-3c0-2.8-3.6-5-8-5z');
 export const UploadIcon = icon('M11 20h2v-9.2l3.3 3.3 1.4-1.4L12 7l-5.7 5.7 1.4 1.4 3.3-3.3zM5 3h14v2H5z');
+export const CloudIcon = icon('M6.5 19a4.5 4.5 0 0 1-.9-8.9 6.5 6.5 0 0 1 12.6-1A5 5 0 0 1 17.5 19z');

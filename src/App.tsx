@@ -42,6 +42,7 @@ export function App() {
   const install = useInstallPrompt();
   const [player, setPlayer] = useState<PlayerController | null>(null);
   const { page, go } = useRoute();
+  const signedIn = account.session !== null;
   const [initialView] = useState<ScoreView>(() => ({ ...DEFAULT_VIEW, ...readPref<Partial<ScoreView>>('view', {}) }));
   const [chosenId, setChosenId] = useState<string>(() => readPref('last', favorites[0] ?? CATALOG[0].id));
 
@@ -98,11 +99,17 @@ export function App() {
     async (score: StoredScore) => {
       const saved = await library.addFile(score);
       toast(
-        saved ? `«${score.title}» añadida a Mis archivos` : `«${score.title}» abierta; este navegador no la guardará`,
+        saved === 'account'
+          ? `«${score.title}» guardada en tu cuenta; solo la ves tú`
+          : saved === 'browser'
+            ? signedIn
+              ? `«${score.title}» guardada en este navegador; no he podido subirla a tu cuenta`
+              : `«${score.title}» añadida a Mis archivos`
+            : `«${score.title}» abierta; este navegador no la guardará`,
       );
       open(score.id);
     },
-    [library, open, toast],
+    [library, open, toast, signedIn],
   );
 
   const importFile = useCallback(
@@ -157,7 +164,12 @@ export function App() {
 
   const deleteFile = useCallback(
     async (id: string) => {
-      await library.removeFile(id);
+      try {
+        await library.removeFile(id);
+      } catch {
+        toast('No he podido borrarla. ¿Tienes conexión?');
+        return;
+      }
       removeFavorite(id);
       toast('Archivo borrado');
       if (id === currentId) open(CATALOG[0].id);
@@ -169,6 +181,13 @@ export function App() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [page]);
+
+  const syncFile = useCallback(
+    async (id: string) => {
+      toast((await library.syncFile(id)) ? 'Guardada en tu cuenta' : 'No he podido subirla. ¿Tienes conexión?');
+    },
+    [library, toast],
+  );
 
   const withPlayer = (node: ReactNode) =>
     player ? <PlayerContext.Provider value={player}>{node}</PlayerContext.Provider> : null;
@@ -254,6 +273,7 @@ export function App() {
         onImport={importFile}
         onOpenLink={openLink}
         onDelete={deleteFile}
+        onSync={signedIn ? (id) => void syncFile(id) : null}
         votes={account.enabled ? { ...votes, onNeedAccount: needAccount } : null}
         onPublish={account.canPublish ? publish : null}
         canAskToPublish={account.enabled && account.profile?.role === 'basic'}
@@ -264,6 +284,7 @@ export function App() {
         shared={shared}
         onSharedChange={() => void refreshShared()}
         favoritesCount={favorites.length}
+        privateCount={library.entries.filter((e) => e.synced).length}
         votes={account.enabled ? { ...votes, onNeedAccount: needAccount } : null}
         onOpen={open}
       />

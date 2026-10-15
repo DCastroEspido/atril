@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { AdvancedRequest, Profile, Role, Score, SharedSong, UserRow } from './types';
+import type { AdvancedRequest, PrivateSong, Profile, Role, Score, SharedSong, UserRow } from './types';
 
 /** Thin, typed calls to the community backend. Every rule is enforced server-side by RLS. */
 
@@ -71,17 +71,20 @@ export async function listSharedSongs(db: SupabaseClient): Promise<SharedSong[]>
 
 export const fileUrl = (db: SupabaseClient, path: string) => db.storage.from('tabs').getPublicUrl(path).data.publicUrl;
 
+/** A storage-safe version of a file name, keeping its extension (the bucket policies check it). */
+const safeName = (name: string) =>
+  name
+    .normalize('NFD')
+    .replace(/[^\w.-]+/g, '-')
+    .slice(-80);
+
 export async function publishSong(
   db: SupabaseClient,
   userId: string,
   file: { bytes: ArrayBuffer; name: string },
   meta: Pick<SharedSong, 'title' | 'artist' | 'genre' | 'level' | 'key' | 'time_label' | 'tempo' | 'tags'>,
 ): Promise<SharedSong> {
-  const safe = file.name
-    .normalize('NFD')
-    .replace(/[^\w.-]+/g, '-')
-    .slice(-80);
-  const path = `${userId}/${crypto.randomUUID()}-${safe}`;
+  const path = `${userId}/${crypto.randomUUID()}-${safeName(file.name)}`;
   const upload = await db.storage
     .from('tabs')
     .upload(path, new Blob([file.bytes]), { contentType: 'application/octet-stream' });
@@ -96,6 +99,60 @@ export async function publishSong(
     throw error;
   }
   return data as SharedSong;
+}
+
+// ---------------------------------------------------------------- private songs
+
+const PRIVATE_FIELDS = 'id,title,artist,file_name,file_path,created_at';
+
+export async function listPrivateSongs(db: SupabaseClient): Promise<PrivateSong[]> {
+  const { data, error } = await db
+    .from('private_songs')
+    .select(PRIVATE_FIELDS)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data as PrivateSong[];
+}
+
+/** Uploads an imported file to the owner's private folder and records it, keeping the browser's id. */
+export async function savePrivateSong(
+  db: SupabaseClient,
+  userId: string,
+  score: { id: string; title: string; artist: string; fileName: string; bytes: ArrayBuffer },
+): Promise<PrivateSong> {
+  const path = `${userId}/${crypto.randomUUID()}-${safeName(score.fileName)}`;
+  const upload = await db.storage
+    .from('private-tabs')
+    .upload(path, new Blob([score.bytes]), { contentType: 'application/octet-stream' });
+  if (upload.error) throw upload.error;
+  const { data, error } = await db
+    .from('private_songs')
+    .insert({
+      id: score.id,
+      title: score.title.slice(0, 200),
+      artist: score.artist.slice(0, 200),
+      file_name: score.fileName.slice(0, 200),
+      file_path: path,
+    })
+    .select(PRIVATE_FIELDS)
+    .single();
+  if (error) {
+    await db.storage.from('private-tabs').remove([path]);
+    throw error;
+  }
+  return data as PrivateSong;
+}
+
+export async function downloadPrivateSong(db: SupabaseClient, song: PrivateSong): Promise<ArrayBuffer> {
+  const { data, error } = await db.storage.from('private-tabs').download(song.file_path);
+  if (error) throw error;
+  return data.arrayBuffer();
+}
+
+export async function deletePrivateSong(db: SupabaseClient, song: PrivateSong) {
+  const { error } = await db.from('private_songs').delete().eq('id', song.id);
+  if (error) throw error;
+  await db.storage.from('private-tabs').remove([song.file_path]);
 }
 
 export async function setSongStatus(db: SupabaseClient, id: string, status: SharedSong['status']) {

@@ -14,13 +14,16 @@ export type StoredScoreInfo = Omit<StoredScore, 'bytes'>;
 
 interface AtrilDB extends DBSchema {
   files: { key: string; value: StoredScore };
+  /** Copies of songs kept in the signed-in account, so they open offline. Cleared on sign-out. */
+  cloud: { key: string; value: { id: string; bytes: ArrayBuffer } };
 }
 
 let db: Promise<IDBPDatabase<AtrilDB>> | null = null;
 const open = () =>
-  (db ??= openDB<AtrilDB>('atril', 1, {
-    upgrade(database) {
-      database.createObjectStore('files', { keyPath: 'id' });
+  (db ??= openDB<AtrilDB>('atril', 2, {
+    upgrade(database, oldVersion) {
+      if (oldVersion < 1) database.createObjectStore('files', { keyPath: 'id' });
+      if (oldVersion < 2) database.createObjectStore('cloud', { keyPath: 'id' });
     },
   }));
 
@@ -39,4 +42,20 @@ export async function saveScore(score: StoredScore): Promise<void> {
 
 export async function deleteScore(id: string): Promise<void> {
   await (await open()).delete('files', id);
+}
+
+export async function getCloudCopy(id: string): Promise<ArrayBuffer | undefined> {
+  return (await (await open()).get('cloud', id))?.bytes;
+}
+
+export async function putCloudCopy(id: string, bytes: ArrayBuffer): Promise<void> {
+  await (await open()).put('cloud', { id, bytes });
+}
+
+export async function deleteCloudCopy(id: string): Promise<void> {
+  await (await open()).delete('cloud', id);
+}
+
+export async function clearCloudCopies(): Promise<void> {
+  await (await open()).clear('cloud');
 }

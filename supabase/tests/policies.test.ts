@@ -49,6 +49,10 @@ beforeAll(async () => {
 afterAll(async () => {
   const { data } = await service.storage.from('tabs').list(users.advanced.id);
   if (data?.length) await service.storage.from('tabs').remove(data.map((f) => `${users.advanced.id}/${f.name}`));
+  for (const u of Object.values(users)) {
+    const { data: mine } = await service.storage.from('private-tabs').list(u.id);
+    if (mine?.length) await service.storage.from('private-tabs').remove(mine.map((f) => `${u.id}/${f.name}`));
+  }
   await service.from('songs').delete().like('title', `%${run}%`);
   for (const u of Object.values(users)) await service.auth.admin.deleteUser(u.id);
 });
@@ -183,6 +187,43 @@ describe('advanced user', () => {
     expect(data).toEqual([]);
     const { data: own } = await users.advanced.client.from('songs').select('id').eq('id', songId);
     expect(own).toHaveLength(1);
+  });
+});
+
+describe('private songs', () => {
+  const path = () => `${users.basic.id}/${run}-mia.gp`;
+  const row = () => ({ id: `file-${run}`, title: `Mía ${run}`, file_name: 'mia.gp', file_path: path() });
+
+  it('the owner keeps a file and its row in their account', async () => {
+    const c = users.basic.client;
+    expect((await c.storage.from('private-tabs').upload(path(), gp)).error).toBeNull();
+    const { data, error } = await c.from('private_songs').insert(row()).select().single();
+    expect(error).toBeNull();
+    expect(data!.owner).toBe(users.basic.id);
+    const file = await c.storage.from('private-tabs').download(path());
+    expect(file.error).toBeNull();
+  });
+
+  it('nobody else sees them, admins included', async () => {
+    for (const c of [anon, users.advanced.client, users.admin.client]) {
+      const { data } = await c.from('private_songs').select('id').eq('owner', users.basic.id);
+      expect(data ?? []).toEqual([]);
+      expect((await c.storage.from('private-tabs').download(path())).error).not.toBeNull();
+    }
+    expect(
+      (await users.advanced.client.storage.from('private-tabs').upload(`${users.basic.id}/${run}-intruso.gp`, gp))
+        .error,
+    ).not.toBeNull();
+    expect((await anon.storage.from('private-tabs').upload(`x/${run}.gp`, gp)).error).not.toBeNull();
+  });
+
+  it('nobody else can delete them; the owner can', async () => {
+    const { data: gone } = await users.admin.client.from('private_songs').delete().eq('id', `file-${run}`).select();
+    expect(gone).toEqual([]);
+    const c = users.basic.client;
+    const { data } = await c.from('private_songs').delete().eq('id', `file-${run}`).select();
+    expect(data).toHaveLength(1);
+    expect((await c.storage.from('private-tabs').remove([path()])).error).toBeNull();
   });
 });
 

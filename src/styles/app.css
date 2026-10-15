@@ -1396,6 +1396,17 @@ textarea.text-input {
   font-size: 12px !important;
   color: var(--ink-soft);
 }
+.uploader.where {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.uploader.where svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  color: var(--hunter);
+}
 .side-note a {
   color: var(--primary);
   font-weight: 600;

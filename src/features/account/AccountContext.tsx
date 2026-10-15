@@ -8,6 +8,8 @@ import type { Profile } from '../community/types';
 export interface Account {
   /** False when this build has no backend: no sign-in, no shared library. */
   enabled: boolean;
+  /** True once the stored session (if any) has been restored, so "signed out" is known to be real. */
+  ready: boolean;
   session: Session | null;
   profile: Profile | null;
   /** Ready to publish songs: advanced users and admins. */
@@ -24,6 +26,7 @@ const AccountContext = createContext<Account | null>(null);
 export function AccountProvider({ children }: { children: ReactNode }) {
   const toast = useToast();
   const [session, setSession] = useState<Session | null>(null);
+  const [ready, setReady] = useState(supabase === null);
   // The fetched profile; only shown while it belongs to the signed-in user.
   const [stored, setStored] = useState<Profile | null>(null);
 
@@ -35,6 +38,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     if (linkError) toast('No se ha podido entrar. Vuelve a intentarlo desde «Entrar».');
     const { data } = supabase.auth.onAuthStateChange((event, next) => {
       setSession(next);
+      setReady(true);
       if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || linkError) {
         // Drop ?code=… (or the error) from the address once Supabase has used it.
         const url = new URL(window.location.href);
@@ -72,13 +76,14 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
-    await supabase?.auth.signOut();
+    await supabase?.auth.signOut({ scope: 'local' });
     setStored(null);
   }, []);
 
   const value = useMemo<Account>(
     () => ({
       enabled: supabase !== null,
+      ready,
       session,
       profile,
       canPublish: profile?.role === 'advanced' || profile?.role === 'admin',
@@ -87,7 +92,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       signInWithGoogle,
       signOut,
     }),
-    [session, profile, refreshProfile, signInWithGoogle, signOut],
+    [ready, session, profile, refreshProfile, signInWithGoogle, signOut],
   );
   return <AccountContext.Provider value={value}>{children}</AccountContext.Provider>;
 }

@@ -225,13 +225,14 @@ function ProfileEditor({ onSaved }: { onSaved: () => void }) {
 interface ContributionsProps {
   shared: SharedSong[];
   favoritesCount: number;
+  privateCount: number;
   votes: VotesState | null;
   onOpen: (id: string) => void;
   onSharedChange: () => void;
 }
 
 /** What you have given to the library, with your shared tabs. */
-function Contributions({ shared, favoritesCount, votes, onOpen, onSharedChange }: ContributionsProps) {
+function Contributions({ shared, favoritesCount, privateCount, votes, onOpen, onSharedChange }: ContributionsProps) {
   const { profile } = useAccount();
   const toast = useToast();
   const [confirming, setConfirming] = useState<string | null>(null);
@@ -243,6 +244,7 @@ function Contributions({ shared, favoritesCount, votes, onOpen, onSharedChange }
     ['Tablaturas compartidas', mine.length],
     ['Votos positivos recibidos', received],
     ['Favoritas', favoritesCount],
+    ['Canciones privadas', privateCount],
     ['Votos dados', Object.keys(votes?.mine ?? {}).length],
   ];
 
@@ -536,11 +538,12 @@ interface Props {
   shared: SharedSong[];
   onSharedChange: () => void;
   favoritesCount: number;
+  privateCount: number;
   votes: VotesState | null;
   onOpen: (id: string) => void;
 }
 
-export function AccountPage({ active, shared, onSharedChange, favoritesCount, votes, onOpen }: Props) {
+export function AccountPage({ active, shared, onSharedChange, favoritesCount, privateCount, votes, onOpen }: Props) {
   const { enabled, session, profile, isAdmin, refreshProfile, signOut } = useAccount();
   // The role can change elsewhere (an admin approves a request): read it again on every visit.
   useEffect(() => {
@@ -574,6 +577,7 @@ export function AccountPage({ active, shared, onSharedChange, favoritesCount, vo
             <Contributions
               shared={shared}
               favoritesCount={favoritesCount}
+              privateCount={privateCount}
               votes={votes}
               onOpen={onOpen}
               onSharedChange={onSharedChange}

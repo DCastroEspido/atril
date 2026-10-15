@@ -58,3 +58,13 @@ export interface VotesState {
   canVote: boolean;
   onNeedAccount: () => void;
 }
+
+/** A file someone keeps in their own account ("Mis canciones privadas"). Only its owner can read it. */
+export interface PrivateSong {
+  id: string;
+  title: string;
+  artist: string;
+  file_name: string;
+  file_path: string;
+  created_at: string;
+}

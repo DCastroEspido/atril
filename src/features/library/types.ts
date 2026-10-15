@@ -16,6 +16,8 @@ export interface LibraryEntry {
   uploader?: string;
   /** Shared songs an admin hid: still listed for the admin and the uploader. */
   hidden?: boolean;
+  /** Imported files kept in the signed-in account ("Mis canciones privadas") rather than only in this browser. */
+  synced?: boolean;
   source:
     | { kind: 'tex'; tex: string }
     | { kind: 'file'; fileName: string }
@@ -37,8 +39,12 @@ export const fromCatalog = (song: CatalogSong): LibraryEntry => ({
   source: { kind: 'tex', tex: song.tex },
 });
 
-export const fromFile = (file: { id: string; title: string; artist: string; fileName: string }): LibraryEntry => ({
+export const fromFile = (
+  file: { id: string; title: string; artist: string; fileName: string },
+  synced = false,
+): LibraryEntry => ({
   id: file.id,
+  synced: synced || undefined,
   title: file.title,
   artist: file.artist,
   genre: IMPORTED_GENRE,

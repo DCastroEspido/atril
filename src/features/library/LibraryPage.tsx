@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ImportIcon, SearchIcon, StarIcon, StarOutlineIcon, TrashIcon } from '../../ui/icons';
+import { CloudIcon, ImportIcon, SearchIcon, StarIcon, StarOutlineIcon, TrashIcon, UploadIcon } from '../../ui/icons';
 import { PublishForm } from '../community/PublishForm';
 import type { SharedSong, VotesState } from '../community/types';
 import { VoteButtons } from '../community/VoteButtons';
@@ -21,6 +21,8 @@ interface Props {
   onImport: (file: File) => void;
   onOpenLink: (link: string) => Promise<string | null>;
   onDelete: (id: string) => void;
+  /** Signed in: moves a file kept only in this browser into the account. */
+  onSync: ((id: string) => void) | null;
   /** Null when this build has no backend. */
   votes: VotesState | null;
   /** Only for advanced users and admins. */
@@ -34,7 +36,7 @@ type PublishMeta = Pick<SharedSong, 'title' | 'artist' | 'genre' | 'level' | 'ke
 /** The library as its own page: search, filters, every song as a card, and ways to add more. */
 export function LibraryPage(props: Props) {
   const { active, entries, currentId, favorites, onOpen, onToggleFavorite, onImport, onOpenLink, onDelete } = props;
-  const { votes, onPublish, canAskToPublish } = props;
+  const { onSync, votes, onPublish, canAskToPublish } = props;
   const [query, setQuery] = useState('');
   const [genre, setGenre] = useState<string | null>(null);
   const [level, setLevel] = useState<string | null>(null);
@@ -118,6 +120,17 @@ export function LibraryPage(props: Props) {
                       <div className="song-text">
                         <h3>{e.title}</h3>
                         <p>{imported ? e.artist || e.tags[0] : e.artist}</p>
+                        {imported && (e.synced || onSync) && (
+                          <p className="uploader where">
+                            {e.synced ? (
+                              <>
+                                <CloudIcon /> En tu cuenta · solo tú la ves
+                              </>
+                            ) : (
+                              'Solo en este navegador'
+                            )}
+                          </p>
+                        )}
                         {e.uploader && (
                           <p className="uploader">
                             Compartida por {e.uploader}
@@ -160,6 +173,16 @@ export function LibraryPage(props: Props) {
                           onVote={(id, v) => void votes.vote(id, v)}
                           onNeedAccount={votes.onNeedAccount}
                         />
+                      )}
+                      {imported && !e.synced && onSync && (
+                        <button
+                          className="icon-btn"
+                          aria-label={`Guardar ${e.title} en mi cuenta`}
+                          title="Guardar en mi cuenta"
+                          onClick={() => onSync(e.id)}
+                        >
+                          <UploadIcon />
+                        </button>
                       )}
                       {imported &&
                         (confirming === e.id ? (
@@ -231,7 +254,10 @@ export function LibraryPage(props: Props) {
               }}
             />
             <LinkImport onOpenLink={onOpenLink} />
-            <p className="fine">Guitar Pro o MusicXML. También puedes arrastrarlo aquí.</p>
+            <p className="fine">
+              Guitar Pro o MusicXML. También puedes arrastrarlo aquí.
+              {onSync && ' Se guardan en tu cuenta y solo las ves tú.'}
+            </p>
           </section>
         </aside>
       </div>
