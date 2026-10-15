@@ -23,7 +23,7 @@ export function NowPlaying({ entry, favorite, onToggleFavorite, votes }: Props) 
   ];
   return (
     <section className="now" aria-label="Canción abierta">
-      <div className="label-art" data-genre={entry?.genre} data-spinning={playing} aria-hidden="true" />
+      <div className="label-art" data-level={entry?.level} data-spinning={playing} aria-hidden="true" />
       <div className="titles">
         <p className="eyebrow">{playing ? 'Sonando ahora' : 'En el atril'}</p>
         <h2>{score?.title || entry?.title || 'Cargando…'}</h2>

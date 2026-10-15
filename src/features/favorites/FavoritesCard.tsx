@@ -21,7 +21,7 @@ export function FavoritesCard({ favorites, currentId, onOpen, onBrowse }: Props)
         <ul className="rows">
           {favorites.map((f) => (
             <li key={f.id} data-here={f.id === currentId || undefined}>
-              <span className="disc" data-genre={f.genre} aria-hidden="true" />
+              <span className="disc" data-level={f.level} aria-hidden="true" />
               <span className="row-text">
                 <strong>{f.title}</strong>
                 <small>{f.artist || f.tags[0]}</small>

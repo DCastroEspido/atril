@@ -684,18 +684,20 @@ p {
 }
 .disc,
 .label-art {
-  --label: var(--bronze);
+  /* Vinyl colour by level; the classic chocolate record for imported files. */
+  --vinyl: var(--chocolate);
+  --groove: color-mix(in srgb, var(--chocolate) 82%, var(--pearl));
   flex: none;
   border-radius: 50%;
-  /* A record: spindle hole, a large paper label with a pearl rim so any label colour reads against
-     the vinyl, a soft sheen, then the grooves. Percentages are of the radius (closest-side). */
+  /* A record: spindle hole, a pearl paper label edged in chocolate, a soft sheen, then the grooves.
+     Percentages are of the radius (closest-side). */
   background:
     radial-gradient(
       circle closest-side,
       var(--chocolate) 0 7%,
-      var(--label) 7.5% 46%,
-      var(--pearl) 46.5% 52%,
-      transparent 52.5%
+      var(--pearl) 7.5% 44%,
+      var(--chocolate) 44.5% 47%,
+      transparent 47.5%
     ),
     conic-gradient(
       from 20deg,
@@ -705,30 +707,23 @@ p {
       color-mix(in srgb, var(--pearl) 12%, transparent) 64%,
       transparent 70%
     ),
-    repeating-radial-gradient(
-      circle,
-      var(--chocolate) 0 2px,
-      color-mix(in srgb, var(--chocolate) 82%, var(--pearl)) 2px 3px
-    );
+    repeating-radial-gradient(circle, var(--vinyl) 0 2px, var(--groove) 2px 3px);
 }
 .disc {
   width: 40px;
   height: 40px;
 }
-[data-genre='Folk'] {
-  --label: var(--hunter);
+:is(.disc, .label-art)[data-level='Principiante'] {
+  --vinyl: var(--hunter);
+  --groove: color-mix(in srgb, var(--hunter) 78%, var(--chocolate));
 }
-[data-genre='Clásica'] {
-  --label: var(--bronze);
+:is(.disc, .label-art)[data-level='Intermedio'] {
+  --vinyl: var(--bronze);
+  --groove: color-mix(in srgb, var(--bronze) 78%, var(--chocolate));
 }
-[data-genre='Blues'] {
-  --label: var(--pearl);
-}
-[data-genre='Rock'] {
-  --label: var(--brown-red);
-}
-[data-genre='Mis archivos'] {
-  --label: var(--sunk);
+:is(.disc, .label-art)[data-level='Avanzado'] {
+  --vinyl: var(--brown-red);
+  --groove: color-mix(in srgb, var(--brown-red) 78%, var(--chocolate));
 }
 
 /* ---------- Dashboard ---------- */

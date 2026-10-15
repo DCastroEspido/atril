@@ -114,7 +114,7 @@ export function LibraryPage(props: Props) {
                 return (
                   <li key={e.id} className="card song-card" data-open={open || undefined}>
                     <div className="song-top">
-                      <span className="disc" data-genre={e.genre} aria-hidden="true" />
+                      <span className="disc" data-level={e.level} aria-hidden="true" />
                       <div className="song-text">
                         <h3>{e.title}</h3>
                         <p>{imported ? e.artist || e.tags[0] : e.artist}</p>
