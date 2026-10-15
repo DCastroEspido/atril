@@ -4,6 +4,15 @@ export interface Profile {
   id: string;
   display_name: string;
   role: Role;
+  avatar_url: string | null;
+  bio: string;
+}
+
+/** A row of the admin's user list. */
+export interface UserRow extends Pick<Profile, 'id' | 'display_name' | 'avatar_url' | 'role'> {
+  email: string;
+  created_at: string;
+  songs: number;
 }
 
 /** A song an advanced user published to everyone. */

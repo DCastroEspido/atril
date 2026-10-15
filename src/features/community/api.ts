@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { AdvancedRequest, Profile, Score, SharedSong } from './types';
+import type { AdvancedRequest, Profile, Role, Score, SharedSong, UserRow } from './types';
 
 /** Thin, typed calls to the community backend. Every rule is enforced server-side by RLS. */
 
@@ -7,16 +7,59 @@ const SONG_FIELDS =
   'id,title,artist,genre,level,key,time_label,tempo,tags,file_path,file_name,uploaded_by,uploader_name,status,created_at';
 
 export async function fetchProfile(db: SupabaseClient, userId: string): Promise<Profile | null> {
-  const { data } = await db.from('profiles').select('id,display_name,role').eq('id', userId).maybeSingle();
+  const { data } = await db
+    .from('profiles')
+    .select('id,display_name,role,avatar_url,bio')
+    .eq('id', userId)
+    .maybeSingle();
   return data as Profile | null;
 }
 
-export async function renameProfile(db: SupabaseClient, userId: string, displayName: string) {
-  const { error } = await db
-    .from('profiles')
-    .update({ display_name: displayName.trim().slice(0, 60) })
-    .eq('id', userId);
+export class NickTakenError extends Error {}
+
+export async function updateProfile(
+  db: SupabaseClient,
+  userId: string,
+  patch: Partial<Pick<Profile, 'display_name' | 'bio' | 'avatar_url'>>,
+) {
+  const { error } = await db.from('profiles').update(patch).eq('id', userId);
+  if (error?.code === '23505') throw new NickTakenError();
   if (error) throw error;
+}
+
+/** Square-crops and shrinks a picture to 256 px WebP before upload, so avatars stay tiny. */
+async function squareAvatar(file: File): Promise<Blob> {
+  const bitmap = await createImageBitmap(file);
+  const side = Math.min(bitmap.width, bitmap.height);
+  const canvas = new OffscreenCanvas(256, 256);
+  const ctx = canvas.getContext('2d')!;
+  ctx.drawImage(bitmap, (bitmap.width - side) / 2, (bitmap.height - side) / 2, side, side, 0, 0, 256, 256);
+  bitmap.close();
+  return canvas.convertToBlob({ type: 'image/webp', quality: 0.85 });
+}
+
+/** Uploads a new avatar, points the profile at it and removes the previous file. Returns the new URL. */
+export async function setAvatar(db: SupabaseClient, profile: Profile, file: File): Promise<string> {
+  const blob = await squareAvatar(file);
+  const path = `${profile.id}/avatar-${Date.now()}.webp`;
+  const up = await db.storage
+    .from('avatars')
+    .upload(path, blob, { contentType: 'image/webp', cacheControl: '31536000' });
+  if (up.error) throw up.error;
+  const url = db.storage.from('avatars').getPublicUrl(path).data.publicUrl;
+  await updateProfile(db, profile.id, { avatar_url: url });
+  await removeAvatarFile(db, profile.avatar_url);
+  return url;
+}
+
+export async function clearAvatar(db: SupabaseClient, profile: Profile) {
+  await updateProfile(db, profile.id, { avatar_url: null });
+  await removeAvatarFile(db, profile.avatar_url);
+}
+
+async function removeAvatarFile(db: SupabaseClient, url: string | null) {
+  const path = url?.split('/storage/v1/object/public/avatars/')[1];
+  if (path) await db.storage.from('avatars').remove([decodeURIComponent(path)]);
 }
 
 /** Published songs for everyone; also the caller's own hidden ones, and all of them for admins. */
@@ -119,6 +162,17 @@ export async function fetchMyRequest(db: SupabaseClient) {
 
 export async function requestAdvanced(db: SupabaseClient, message: string) {
   const { error } = await db.from('advanced_requests').insert({ message: message.trim().slice(0, 500) });
+  if (error) throw error;
+}
+
+export async function listUsers(db: SupabaseClient): Promise<UserRow[]> {
+  const { data, error } = await db.rpc('list_users');
+  if (error) throw error;
+  return data as UserRow[];
+}
+
+export async function setUserRole(db: SupabaseClient, userId: string, role: Role) {
+  const { error } = await db.from('profiles').update({ role }).eq('id', userId);
   if (error) throw error;
 }
 

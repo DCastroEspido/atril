@@ -54,11 +54,18 @@ afterAll(async () => {
 });
 
 describe('anyone', () => {
-  it('cannot publish or read profiles', async () => {
+  it('cannot publish, and sees public profiles without e-mails', async () => {
     const { error } = await anon.from('songs').insert(song(`x/${run}.gp`));
     expect(error).not.toBeNull();
-    const { data } = await anon.from('profiles').select();
-    expect(data).toEqual([]);
+    const { data } = await anon.from('profiles').select('*').eq('id', users.basic.id).single();
+    expect(data?.display_name).toBeTruthy();
+    expect(data).not.toHaveProperty('email');
+    const { data: changed } = await anon
+      .from('profiles')
+      .update({ display_name: 'hack' })
+      .eq('id', users.basic.id)
+      .select();
+    expect(changed).toEqual([]);
   });
 
   it('cannot call admin or internal functions', async () => {
@@ -76,12 +83,34 @@ describe('anyone', () => {
 });
 
 describe('basic user', () => {
-  it('starts as basic and can rename but not promote themselves', async () => {
+  it('starts as basic with a neutral nick, can rename but not promote themselves', async () => {
     const c = users.basic.client;
-    const { data } = await c.from('profiles').select('role').single();
+    const { data } = await c.from('profiles').select('role,display_name').eq('id', users.basic.id).single();
     expect(data?.role).toBe('basic');
-    expect((await c.from('profiles').update({ display_name: 'Ana' }).eq('id', users.basic.id)).error).toBeNull();
+    expect(data?.display_name).toMatch(/^musico-/);
+    expect(
+      (
+        await c
+          .from('profiles')
+          .update({ display_name: `Ana ${run}`, bio: 'Toco rumba' })
+          .eq('id', users.basic.id)
+      ).error,
+    ).toBeNull();
     expect((await c.from('profiles').update({ role: 'admin' }).eq('id', users.basic.id)).error).not.toBeNull();
+  });
+
+  it('cannot take a nick someone already has, or edit other profiles', async () => {
+    const taken = await users.advanced.client
+      .from('profiles')
+      .update({ display_name: `ANA ${run}` })
+      .eq('id', users.advanced.id);
+    expect(taken.error?.code).toBe('23505');
+    const { data } = await users.basic.client
+      .from('profiles')
+      .update({ bio: 'x' })
+      .eq('id', users.advanced.id)
+      .select();
+    expect(data).toEqual([]);
   });
 
   it('cannot publish songs or upload files', async () => {
@@ -120,7 +149,7 @@ describe('advanced user', () => {
     expect((await c.storage.from('tabs').upload(`${users.advanced.id}/${run}.exe`, gp)).error).not.toBeNull();
   });
 
-  it('publishes a song that everyone can see, signed with their name', async () => {
+  it('publishes a song that everyone can see, signed with their nick', async () => {
     const c = users.advanced.client;
     const { data, error } = await c
       .from('songs')
@@ -132,6 +161,15 @@ describe('advanced user', () => {
     expect(data!.uploaded_by).toBe(users.advanced.id);
     const { data: seen } = await anon.from('songs').select('id').eq('id', songId);
     expect(seen).toHaveLength(1);
+  });
+
+  it('renaming updates the nick on songs already shared', async () => {
+    await users.advanced.client
+      .from('profiles')
+      .update({ display_name: `Lucía ${run}` })
+      .eq('id', users.advanced.id);
+    const { data } = await anon.from('songs').select('uploader_name').eq('id', songId).single();
+    expect(data?.uploader_name).toBe(`Lucía ${run}`);
   });
 
   it("cannot change another user's song", async () => {
@@ -149,6 +187,14 @@ describe('advanced user', () => {
 });
 
 describe('admin', () => {
+  it('lists users with e-mails, which nobody else can', async () => {
+    const { data, error } = await users.admin.client.rpc('list_users');
+    expect(error).toBeNull();
+    expect(data!.some((u: { email: string }) => u.email === `advanced-${run}@atril.test`)).toBe(true);
+    expect((await users.basic.client.rpc('list_users')).error).not.toBeNull();
+    expect((await anon.rpc('list_users')).error).not.toBeNull();
+  });
+
   it('sees pending requests with who asked, and approving makes them advanced', async () => {
     const a = users.admin.client;
     const { data, error } = await a.rpc('list_advanced_requests');
@@ -157,7 +203,11 @@ describe('admin', () => {
     expect(mine?.email).toBe(`basic-${run}@atril.test`);
     expect(mine?.message).toBe('Toco la guitarra');
     expect((await a.rpc('decide_advanced_request', { request_id: mine.id, approve: true })).error).toBeNull();
-    const { data: profile } = await users.basic.client.from('profiles').select('role').single();
+    const { data: profile } = await users.basic.client
+      .from('profiles')
+      .select('role')
+      .eq('id', users.basic.id)
+      .single();
     expect(profile?.role).toBe('advanced');
     // Deciding twice fails.
     expect((await a.rpc('decide_advanced_request', { request_id: mine.id, approve: false })).error).not.toBeNull();

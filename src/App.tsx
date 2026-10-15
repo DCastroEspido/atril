@@ -4,6 +4,7 @@ import { useRoute } from './app/useRoute';
 import { CATALOG } from './catalog';
 import { useAccount } from './features/account/AccountContext';
 import { AccountPage } from './features/account/AccountPage';
+import { Avatar } from './features/account/Avatar';
 import { publishSong } from './features/community/api';
 import { useSharedSongs } from './features/community/useSharedSongs';
 import { useVotes } from './features/community/useVotes';
@@ -178,7 +179,6 @@ export function App() {
         [
           ['practice', 'Practicar', NoteIcon],
           ['library', 'Biblioteca', ShelfIcon],
-          ...(account.enabled ? [['account', account.session ? 'Cuenta' : 'Entrar', UserIcon]] : []),
         ] as [Page, string, typeof NoteIcon][]
       ).map(([to, label, Icon]) => (
         <a key={to} href={hrefFor(to)} aria-current={page === to ? 'page' : undefined}>
@@ -186,6 +186,17 @@ export function App() {
           <span>{label}</span>
         </a>
       ))}
+      {account.enabled && (
+        <a
+          href={hrefFor('account')}
+          aria-current={page === 'account' ? 'page' : undefined}
+          className={account.profile ? 'me' : undefined}
+          aria-label={account.profile ? `Tu perfil: ${account.profile.display_name}` : undefined}
+        >
+          {account.profile ? <Avatar profile={account.profile} size={24} /> : <UserIcon />}
+          <span>{account.profile ? account.profile.display_name : account.session ? 'Perfil' : 'Entrar'}</span>
+        </a>
+      )}
     </nav>
   );
 
@@ -248,7 +259,14 @@ export function App() {
         canAskToPublish={account.enabled && account.profile?.role === 'basic'}
       />
 
-      <AccountPage active={page === 'account'} shared={shared} onSharedChange={() => void refreshShared()} />
+      <AccountPage
+        active={page === 'account'}
+        shared={shared}
+        onSharedChange={() => void refreshShared()}
+        favoritesCount={favorites.length}
+        votes={account.enabled ? { ...votes, onNeedAccount: needAccount } : null}
+        onOpen={open}
+      />
 
       {nav('menu-bottom')}
       <UpdateBanner />
