@@ -177,7 +177,7 @@ export function LibraryPage(props: Props) {
             <header className="panel-head">
               <h3>Añadir canciones</h3>
             </header>
-            <button className="pill wide" onClick={() => fileInput.current?.click()}>
+            <button className="pill primary wide" onClick={() => fileInput.current?.click()}>
               <ImportIcon />
               Importar archivo
             </button>
@@ -195,10 +195,7 @@ export function LibraryPage(props: Props) {
               }}
             />
             <LinkImport onOpenLink={onOpenLink} />
-            <p className="fine">
-              Guitar Pro (.gp, .gpx, .gp5, .gp4, .gp3) y MusicXML. También puedes arrastrar el archivo a la ventana. El
-              catálogo trae piezas tradicionales y ejercicios propios.
-            </p>
+            <p className="fine">Guitar Pro o MusicXML. También puedes arrastrarlo aquí.</p>
           </section>
         </aside>
       </div>

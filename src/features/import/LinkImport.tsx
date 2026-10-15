@@ -27,8 +27,8 @@ export function LinkImport({ onOpenLink }: Props) {
 
   return (
     <form className="link-import" onSubmit={submit}>
-      <label className="eyebrow" htmlFor="scoreLink">
-        Abrir desde un enlace
+      <label className="visually-hidden" htmlFor="scoreLink">
+        Enlace a un archivo de tablatura
       </label>
       <div className="field">
         <LinkIcon />
@@ -36,28 +36,21 @@ export function LinkImport({ onOpenLink }: Props) {
           id="scoreLink"
           type="url"
           inputMode="url"
-          placeholder="https://github.com/…/cancion.gp"
+          placeholder={online ? 'o pega un enlace' : 'Sin conexión'}
           autoComplete="off"
           value={link}
           onChange={(e) => {
             setLink(e.target.value);
             setError(null);
           }}
-          aria-describedby="scoreLinkHelp"
         />
         <button className="pill" type="submit" disabled={!online || busy || !link.trim()}>
           {busy ? 'Abriendo…' : 'Abrir'}
         </button>
       </div>
-      {error ? (
+      {error && (
         <p className="error" role="alert">
           {error}
-        </p>
-      ) : (
-        <p className="fine" id="scoreLinkHelp">
-          {online
-            ? 'Archivos públicos de GitHub, Dropbox o webs que lo permitan. Songsterr, Ultimate Guitar y Google Drive no lo permiten.'
-            : 'Necesita conexión.'}
         </p>
       )}
     </form>
