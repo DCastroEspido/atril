@@ -15,6 +15,8 @@ export interface Account {
   isAdmin: boolean;
   refreshProfile: () => Promise<void>;
   sendMagicLink: (email: string) => Promise<void>;
+  /** Leaves the page for Google's sign-in and comes back signed in. */
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -31,7 +33,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     // A failed or expired sign-in link comes back with an error in the query string.
     const params = new URLSearchParams(window.location.search);
     const linkError = params.get('error_description');
-    if (linkError) toast('Ese enlace para entrar ya no vale. Pide uno nuevo desde «Entrar».');
+    if (linkError) toast('No se ha podido entrar. Vuelve a intentarlo desde «Entrar».');
     const { data } = supabase.auth.onAuthStateChange((event, next) => {
       setSession(next);
       if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || linkError) {
@@ -70,6 +72,15 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   }, []);
 
+  const signInWithGoogle = useCallback(async () => {
+    if (!supabase) return;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}${import.meta.env.BASE_URL}` },
+    });
+    if (error) throw error;
+  }, []);
+
   const signOut = useCallback(async () => {
     await supabase?.auth.signOut();
     setStored(null);
@@ -84,9 +95,10 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       isAdmin: profile?.role === 'admin',
       refreshProfile,
       sendMagicLink,
+      signInWithGoogle,
       signOut,
     }),
-    [session, profile, refreshProfile, sendMagicLink, signOut],
+    [session, profile, refreshProfile, sendMagicLink, signInWithGoogle, signOut],
   );
   return <AccountContext.Provider value={value}>{children}</AccountContext.Provider>;
 }
