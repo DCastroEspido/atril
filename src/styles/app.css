@@ -700,7 +700,7 @@ p {
   height: 40px;
 }
 [data-genre='Folk'] {
-  --label: var(--hunter);
+  --label: var(--violet);
 }
 [data-genre='Clásica'] {
   --label: var(--bronze);
@@ -897,7 +897,7 @@ p {
   background: color-mix(in srgb, var(--bronze) 28%, transparent);
 }
 .at-selection div {
-  background: color-mix(in srgb, var(--hunter) 18%, transparent);
+  background: color-mix(in srgb, var(--violet) 16%, transparent);
 }
 .at-cursor-beat {
   background: var(--brown-red);
