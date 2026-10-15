@@ -1,6 +1,15 @@
 import { AlphaTabApi, importer, LayoutMode, StaveProfile, synth, type model } from '@coderline/alphatab';
 import { barAtTick, clampBars, rangeBeats } from './scoreNav';
 
+/**
+ * iPhones mute web audio with the ring/silent switch unless the page says it plays media, like a music
+ * app. Safari's Audio Session API (iOS 17+) says so; elsewhere the property does not exist.
+ */
+function playThroughSilentSwitch() {
+  const session = (navigator as Navigator & { audioSession?: { type: string } }).audioSession;
+  if (session) session.type = 'playback';
+}
+
 /** The line alphaTab adds under every score. */
 const CREDIT = 'rendered by alphaTab';
 
@@ -151,6 +160,7 @@ export class PlayerController {
     });
     this.api.metronomeVolume = 0;
     this.api.countInVolume = 0;
+    playThroughSilentSwitch();
     this.wire();
     this.surface = new MutationObserver(() => this.tidySurface(container));
     this.surface.observe(container, { childList: true, subtree: true });
