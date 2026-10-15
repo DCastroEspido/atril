@@ -1,6 +1,6 @@
 /*
  * Mid-century hi-fi: warm paper grounds, chocolate rules, a brown-red primary,
- * crimson violet as the complement, light bronze only for shadows and fills.
+ * sage green as the complement, light bronze only for shadows and fills.
  * Layout: a dashboard around the tab. "Now playing" on top, the tab card as the hero with its
  * transport, the console (tempo, tracks) beside it, sections and favourites below; the library is a drawer.
  * Themes: light (pearl) and an after-hours dark (chocolate). The viewer picks Claro, Oscuro or Sistema;
@@ -12,7 +12,7 @@
   --bronze: #e6af91;
   --chocolate: #6a2e2a;
   --brown-red: #a2242f;
-  --violet: #6c244c;
+  --hunter: #588157;
 
   /* roles */
   --ground: var(--pearl);
@@ -24,8 +24,9 @@
   --rule: var(--chocolate);
   --primary: var(--brown-red);
   --on-primary: var(--pearl);
-  --complement: var(--violet);
-  --on-complement: var(--pearl);
+  /* 1% darker than --hunter so white text on it stays readable (4.5:1); the eye cannot tell them apart. */
+  --complement: #578056;
+  --on-complement: #ffffff;
   --shadow-color: var(--bronze);
   --hover: color-mix(in srgb, var(--bronze) 35%, transparent);
   --selected: color-mix(in srgb, var(--brown-red) 12%, var(--surface));
@@ -61,7 +62,7 @@
     --rule: color-mix(in srgb, var(--pearl) 55%, transparent);
     --primary: #e66f75;
     --on-primary: #2a1513;
-    --complement: #d7a3c2;
+    --complement: #8fb38d;
     --on-complement: #2a1513;
     --shadow-color: #0d0505;
     --hover: color-mix(in srgb, var(--bronze) 16%, transparent);
@@ -79,7 +80,7 @@
   --rule: color-mix(in srgb, var(--pearl) 55%, transparent);
   --primary: #e66f75;
   --on-primary: #2a1513;
-  --complement: #d7a3c2;
+  --complement: #8fb38d;
   --on-complement: #2a1513;
   --shadow-color: #0d0505;
   --hover: color-mix(in srgb, var(--bronze) 16%, transparent);

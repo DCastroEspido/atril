@@ -687,8 +687,24 @@ p {
   --label: var(--bronze);
   flex: none;
   border-radius: 50%;
+  /* A record: spindle hole, a large paper label with a pearl rim so any label colour reads against
+     the vinyl, a soft sheen, then the grooves. Percentages are of the radius (closest-side). */
   background:
-    radial-gradient(circle, var(--ground) 0 5%, var(--label) 5.5% 30%, transparent 31%),
+    radial-gradient(
+      circle closest-side,
+      var(--chocolate) 0 7%,
+      var(--label) 7.5% 46%,
+      var(--pearl) 46.5% 52%,
+      transparent 52.5%
+    ),
+    conic-gradient(
+      from 20deg,
+      transparent 0 10%,
+      color-mix(in srgb, var(--pearl) 18%, transparent) 15%,
+      transparent 22% 58%,
+      color-mix(in srgb, var(--pearl) 12%, transparent) 64%,
+      transparent 70%
+    ),
     repeating-radial-gradient(
       circle,
       var(--chocolate) 0 2px,
@@ -700,7 +716,7 @@ p {
   height: 40px;
 }
 [data-genre='Folk'] {
-  --label: var(--violet);
+  --label: var(--hunter);
 }
 [data-genre='Clásica'] {
   --label: var(--bronze);
@@ -897,7 +913,7 @@ p {
   background: color-mix(in srgb, var(--bronze) 28%, transparent);
 }
 .at-selection div {
-  background: color-mix(in srgb, var(--violet) 16%, transparent);
+  background: color-mix(in srgb, var(--hunter) 18%, transparent);
 }
 .at-cursor-beat {
   background: var(--brown-red);
