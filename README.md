@@ -105,31 +105,33 @@ Se entra sin contraseña, con un enlace al correo. Las reglas viven en la base d
 security en `supabase/migrations/`), no en la app: aunque alguien manipule el navegador, no puede
 saltárselas.
 
-### En local
+### Entornos
 
-Requiere Docker.
+Hay dos proyectos de Supabase en la organización «Atril»:
+
+- **Atril Staging** (`xorkxbpswzifxfzsxmaz`): desarrollo y pruebas. `npm run dev` lo usa a través de
+  `.env.local` (no se sube al repo).
+- **Atril** (`juiobvorrzvmgdahjqiw`): producción, el que usa la web publicada (variables
+  `SUPABASE_URL` y `SUPABASE_ANON_KEY` del repo en GitHub).
+
+Un cambio en la base de datos es una migración nueva en `supabase/migrations/`, y va siempre primero a
+staging:
 
 ```sh
-supabase start            # base de datos, auth, almacenamiento y un buzón de correo de pruebas
-supabase db reset         # aplica las migraciones
-npm run test:db           # comprueba los permisos de cada tipo de usuario
+npm run db:push:staging   # sube las migraciones a staging y pasa los tests de permisos
+npm run db:push:prod      # cuando todo pasa: producción, y el revisor de seguridad de Supabase
 ```
 
-`.env.local` (no se sube al repo) apunta la app al Supabase local. Los correos de acceso llegan al
-buzón de pruebas en http://127.0.0.1:54324.
+Los scripts usan la sesión de la CLI de Supabase (`supabase login`) y sacan las claves de ahí, sin
+guardarlas en el repo. Los proyectos gratuitos se pausan tras una semana sin uso; se reactivan desde el
+panel.
 
-### En producción
+### Pendiente en producción
 
-1. Crear un proyecto en Supabase y enlazarlo: `supabase link --project-ref <ref>`.
-2. Subir el esquema: `supabase db push`.
-3. En Authentication → URL Configuration, poner como Site URL `https://dcastroespido.github.io/atril/`
-   y añadirla a las Redirect URLs.
-4. Configurar un SMTP propio (Resend, Brevo…) en Authentication → SMTP: el envío de correo incluido en
-   el plan gratuito solo manda unos pocos enlaces por hora.
-5. En GitHub → Settings → Secrets and variables → Actions → Variables, crear `SUPABASE_URL` y
-   `SUPABASE_ANON_KEY` (la clave anon es pública por diseño) y volver a desplegar.
-6. Entrar una vez en Atril con tu correo y hacerte admin desde el SQL editor:
-   `update public.profiles set role = 'admin' where id = (select id from auth.users where email = '…');`
+- Configurar un SMTP propio (Resend, Brevo…) en Authentication → SMTP. Sin él, Supabase solo envía unos
+  pocos enlaces por hora y solo a los miembros de la organización.
+- Hacerse admin tras el primer acceso, desde el SQL editor:
+  `update public.profiles set role = 'admin' where id = (select id from auth.users where email = '…');`
 
 Las tablaturas compartidas son públicas: cualquiera puede verlas y descargarlas. Al publicar, Atril pide
 confirmar que la tablatura es propia, de dominio público o con permiso, y el admin puede ocultarla o

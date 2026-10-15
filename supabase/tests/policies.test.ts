@@ -1,11 +1,11 @@
 /**
- * Row level security of the community library, checked against the local stack.
- * Run with `supabase start` then `npm run test:db`. Not part of `npm run check` (needs Docker).
+ * Row level security of the community library, checked against a real Supabase project.
+ * `npm run test:db` runs it on Atril Staging (keys from the Supabase CLI). Not part of `npm run check`.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-// Well-known keys of the local Supabase stack; never used outside it.
+// Fallbacks are the well-known keys of a local `supabase start` stack; scripts/staging-env.sh sets the real ones.
 const URL = process.env.SUPABASE_URL ?? 'http://127.0.0.1:54321';
 const ANON =
   process.env.SUPABASE_ANON_KEY ??
@@ -59,6 +59,14 @@ describe('anyone', () => {
     expect(error).not.toBeNull();
     const { data } = await anon.from('profiles').select();
     expect(data).toEqual([]);
+  });
+
+  it('cannot call admin or internal functions', async () => {
+    expect((await anon.rpc('list_advanced_requests')).error).not.toBeNull();
+    expect(
+      (await anon.rpc('decide_advanced_request', { request_id: crypto.randomUUID(), approve: true })).error,
+    ).not.toBeNull();
+    expect((await anon.rpc('is_admin')).error).not.toBeNull();
   });
 
   it('reads vote tallies', async () => {

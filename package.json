@@ -15,7 +15,9 @@
     "check": "npm run typecheck && npm run lint && npm run test",
     "icons": "pwa-assets-generator",
     "format": "prettier --write .",
-    "test:db": "vitest run --config vitest.db.config.ts"
+    "test:db": "sh scripts/staging-env.sh vitest run --config vitest.db.config.ts",
+    "db:push:staging": "supabase link --project-ref xorkxbpswzifxfzsxmaz && supabase db push && npm run test:db",
+    "db:push:prod": "supabase link --project-ref juiobvorrzvmgdahjqiw && supabase db push && supabase db advisors --linked; supabase link --project-ref xorkxbpswzifxfzsxmaz"
   },
   "dependencies": {
     "@coderline/alphatab": "1.8.4",
