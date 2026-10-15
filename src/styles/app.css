@@ -689,15 +689,16 @@ p {
   --groove: color-mix(in srgb, var(--chocolate) 82%, var(--pearl));
   flex: none;
   border-radius: 50%;
-  /* A record: spindle hole, a pearl paper label edged in chocolate, a soft sheen, then the grooves.
+  /* A record: spindle hole, a pearl paper label inside a thick dark ring (readable on any vinyl colour),
+     a soft sheen, then the grooves.
      Percentages are of the radius (closest-side). */
   background:
     radial-gradient(
       circle closest-side,
-      var(--chocolate) 0 7%,
-      var(--pearl) 7.5% 44%,
-      var(--chocolate) 44.5% 47%,
-      transparent 47.5%
+      var(--chocolate) 0 9%,
+      var(--pearl) 9.5% 41%,
+      color-mix(in srgb, var(--chocolate) 85%, black) 41.5% 51%,
+      transparent 51.5%
     ),
     conic-gradient(
       from 20deg,

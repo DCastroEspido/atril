@@ -21,12 +21,13 @@ describe('searchLibrary', () => {
   });
 
   it('matches tags and requires every word', () => {
-    expect(ids('palm mute')).toEqual(['blues-la', 'rock-mi']);
+    expect(ids('palm mute')).toEqual(['blues-la', 'rock-mi', 'dropd-sincopado', 'galope-mi']);
     expect(ids('palm mute shuffle')).toEqual(['blues-la']);
   });
 
   it('filters by genre and level', () => {
-    expect(ids('', 'Rock')).toEqual(['rock-mi']);
+    expect(ids('', 'Rock')).toEqual(['rock-mi', 'octavas-fuzz']);
+    expect(ids('', 'Metal', 'Avanzado')).toEqual(['galope-mi']);
     expect(ids('', 'Clásica', 'Principiante')).toEqual(['oda-alegria']);
     expect(ids('', 'Mis archivos')).toEqual(['file-1']);
   });
