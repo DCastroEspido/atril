@@ -16,18 +16,27 @@ export function sectionsOf(score: model.Score): Section[] {
   return starts.map((s, k) => ({ ...s, to: k + 1 < starts.length ? starts[k + 1].from - 1 : score.masterBars.length }));
 }
 
-/** 1-based bar that contains a MIDI tick. Ignores repeats, which is enough for a position read-out. */
-export function barAtTick(score: model.Score, tick: number): number {
-  const bars = score.masterBars;
-  if (!bars.length) return 1;
+/** alphaTab's playback map: every bar in the order it plays, repeats unrolled, with MIDI tick spans. */
+export interface PlaybackMap {
+  masterBars: { start: number; masterBar: { index: number } }[];
+}
+
+/**
+ * 1-based score bar playing at a MIDI tick. With the playback map, repeats count: the second pass
+ * of bars 5–8 reads 5–8 again, not 9–12. Without it (before the first render), score order is used.
+ */
+export function barAtTick(score: model.Score, tick: number, playback?: PlaybackMap | null): number {
+  const played = playback?.masterBars.length ? playback.masterBars : null;
+  const starts = played ?? score.masterBars;
+  if (!starts.length) return 1;
   let lo = 0;
-  let hi = bars.length - 1;
+  let hi = starts.length - 1;
   while (lo < hi) {
     const mid = (lo + hi + 1) >> 1;
-    if (bars[mid].start <= tick) lo = mid;
+    if (starts[mid].start <= tick) lo = mid;
     else hi = mid - 1;
   }
-  return lo + 1;
+  return played ? played[lo].masterBar.index + 1 : lo + 1;
 }
 
 export const clampBars = (score: model.Score, from: number, to: number): [number, number] => {

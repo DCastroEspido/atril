@@ -1,6 +1,9 @@
 import { AlphaTabApi, importer, LayoutMode, StaveProfile, synth, type model } from '@coderline/alphatab';
 import { barAtTick, clampBars, rangeBeats } from './scoreNav';
 
+/** The line alphaTab adds under every score. */
+const CREDIT = 'rendered by alphaTab';
+
 export interface TrackMix {
   visible: boolean;
   mute: boolean;
@@ -149,7 +152,15 @@ export class PlayerController {
     this.api.metronomeVolume = 0;
     this.api.countInVolume = 0;
     this.wire();
+    // alphaTab always signs the score; keep the credit, but quieter than the music (styled in app.css).
+    this.credit = new MutationObserver(() => {
+      for (const text of container.querySelectorAll('svg text:not(.at-credit)'))
+        if (text.textContent === CREDIT) text.classList.add('at-credit');
+    });
+    this.credit.observe(container, { childList: true, subtree: true });
   }
+
+  private credit: MutationObserver;
 
   getState = (): PlayerState => this.state;
   getPosition = (): Position => this.position;
@@ -196,7 +207,11 @@ export class PlayerController {
     api.playerStateChanged.on((e) => this.set({ playing: e.state === synth.PlayerState.Playing }));
     api.playerPositionChanged.on((e) => {
       const score = this.state.score;
-      this.position = { current: e.currentTime, end: e.endTime, bar: score ? barAtTick(score, e.currentTick) : 1 };
+      this.position = {
+        current: e.currentTime,
+        end: e.endTime,
+        bar: score ? barAtTick(score, e.currentTick, this.api.tickCache) : 1,
+      };
       this.positionListeners.forEach((fn) => fn());
     });
     api.playbackRangeChanged.on((e) => {
@@ -208,7 +223,11 @@ export class PlayerController {
         this.set({ range: null, looping: false });
         return;
       }
-      const range = { from: barAtTick(score, r.startTick), to: barAtTick(score, Math.max(r.startTick, r.endTick - 1)) };
+      const map = this.api.tickCache;
+      const range = {
+        from: barAtTick(score, r.startTick, map),
+        to: barAtTick(score, Math.max(r.startTick, r.endTick - 1), map),
+      };
       this.api.isLooping = true;
       this.set({ range, looping: true });
     });
@@ -298,10 +317,10 @@ export class PlayerController {
     if (this.position.end) this.api.timePosition = fraction * this.position.end;
   }
 
-  /** Jump to the start of a bar, 1-based. Ignores repeats, like the position read-out. */
+  /** Jump to the start of a bar, 1-based: the first time it plays, counting repeats before it. */
   seekToBar(bar: number) {
     const master = this.state.score?.masterBars[bar - 1];
-    if (master) this.api.tickPosition = master.start;
+    if (master) this.api.tickPosition = this.api.tickCache?.getMasterBarStart(master) ?? master.start;
   }
 
   setView(patch: Partial<ScoreView>) {
@@ -425,6 +444,7 @@ export class PlayerController {
   }
 
   destroy() {
+    this.credit.disconnect();
     this.api.destroy();
     this.listeners.clear();
     this.positionListeners.clear();

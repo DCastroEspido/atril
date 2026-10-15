@@ -905,6 +905,12 @@ p {
   pointer-events: none;
 }
 /* alphaTab's cursors and selection, in the palette. The paper is light in both themes. */
+.at-surface text.at-credit {
+  font-size: 9px !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.04em;
+  opacity: 0.35;
+}
 .at-cursor-bar {
   background: color-mix(in srgb, var(--bronze) 28%, transparent);
 }

@@ -30,6 +30,17 @@ describe('scoreNav', () => {
     expect(barAtTick(score, Number.MAX_SAFE_INTEGER)).toBe(bars.length);
   });
 
+  it('counts repeats when it has the playback map', () => {
+    // Bars 1, 2, 2, 3: bar 2 repeats once.
+    const playback = {
+      masterBars: [0, 1, 1, 2].map((index, k) => ({ start: k * 3840, masterBar: { index } })),
+    };
+    expect(barAtTick(score, 0, playback)).toBe(1);
+    expect(barAtTick(score, 3840 * 2 + 10, playback)).toBe(2);
+    expect(barAtTick(score, 3840 * 3, playback)).toBe(3);
+    expect(barAtTick(score, 3840 * 2, { masterBars: [] })).toBe(barAtTick(score, 3840 * 2));
+  });
+
   it('keeps bar ranges inside the song and in order', () => {
     expect(clampBars(score, 0, 99)).toEqual([1, 17]);
     expect(clampBars(score, 9, 3)).toEqual([9, 9]);
