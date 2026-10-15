@@ -52,3 +52,11 @@ export const HeadphonesIcon = icon(
 );
 export const NoteIcon = icon('M9 3h11v13.5a3.5 3.5 0 1 1-2-3.2V8h-7v10.5a3.5 3.5 0 1 1-2-3.2z');
 export const ExpandIcon = icon('M4 4h6v2H6v4H4zm10 0h6v6h-2V6h-4zM4 14h2v4h4v2H4zm14 0h2v6h-6v-2h4z');
+export const ThumbUpIcon = icon(
+  'M2 10h4v11H2zm6 11h9.3a2 2 0 0 0 2-1.6l1.6-7.8A2 2 0 0 0 18.9 9H14l.9-4.3a1.5 1.5 0 0 0-.4-1.4L13.4 2 8 8v13z',
+);
+export const ThumbDownIcon = icon(
+  'M22 14h-4V3h4zm-6-11H6.7a2 2 0 0 0-2 1.6L3.1 12.4A2 2 0 0 0 5.1 15H10l-.9 4.3a1.5 1.5 0 0 0 .4 1.4l1.1 1.3 5.4-6V3z',
+);
+export const UserIcon = icon('M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.4 0-8 2.2-8 5v3h16v-3c0-2.8-3.6-5-8-5z');
+export const UploadIcon = icon('M11 20h2v-9.2l3.3 3.3 1.4-1.4L12 7l-5.7 5.7 1.4 1.4 3.3-3.3zM5 3h14v2H5z');

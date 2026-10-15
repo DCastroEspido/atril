@@ -29,6 +29,9 @@ jobs:
       - run: npm run build
         env:
           BASE: /${{ github.event.repository.name }}/
+          # Community backend. Empty until the repo variables exist: Atril then runs without accounts.
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist

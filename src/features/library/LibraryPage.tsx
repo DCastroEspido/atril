@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ImportIcon, SearchIcon, StarIcon, StarOutlineIcon, TrashIcon } from '../../ui/icons';
+import { PublishForm } from '../community/PublishForm';
+import type { SharedSong, VotesState } from '../community/types';
+import { VoteButtons } from '../community/VoteButtons';
 import { LinkImport } from '../import/LinkImport';
 import { ACCEPTED_FILES } from '../import/readScoreFile';
 import { OnlineSearch } from './OnlineSearch';
@@ -18,11 +21,20 @@ interface Props {
   onImport: (file: File) => void;
   onOpenLink: (link: string) => Promise<string | null>;
   onDelete: (id: string) => void;
+  /** Null when this build has no backend. */
+  votes: VotesState | null;
+  /** Only for advanced users and admins. */
+  onPublish: ((file: { bytes: ArrayBuffer; name: string }, meta: PublishMeta) => Promise<string | null>) | null;
+  /** Signed-in basic users can ask to become advanced. */
+  canAskToPublish: boolean;
 }
+
+type PublishMeta = Pick<SharedSong, 'title' | 'artist' | 'genre' | 'level' | 'key' | 'time_label' | 'tempo' | 'tags'>;
 
 /** The library as its own page: search, filters, every song as a card, and ways to add more. */
 export function LibraryPage(props: Props) {
   const { active, entries, currentId, favorites, onOpen, onToggleFavorite, onImport, onOpenLink, onDelete } = props;
+  const { votes, onPublish, canAskToPublish } = props;
   const [query, setQuery] = useState('');
   const [genre, setGenre] = useState<string | null>(null);
   const [level, setLevel] = useState<string | null>(null);
@@ -106,6 +118,12 @@ export function LibraryPage(props: Props) {
                       <div className="song-text">
                         <h3>{e.title}</h3>
                         <p>{imported ? e.artist || e.tags[0] : e.artist}</p>
+                        {e.uploader && (
+                          <p className="uploader">
+                            Compartida por {e.uploader}
+                            {e.hidden ? ' · oculta' : ''}
+                          </p>
+                        )}
                       </div>
                       <button
                         className="icon-btn star"
@@ -120,7 +138,9 @@ export function LibraryPage(props: Props) {
                       <span className="lvl" data-l={e.level}>
                         {e.level}
                       </span>
-                      {!imported && <span>{`${e.key} · ${e.timeLabel} · ${e.tempo} bpm`}</span>}
+                      {!imported && (
+                        <span>{[e.key, e.timeLabel, e.tempo && `${e.tempo} bpm`].filter(Boolean).join(' · ')}</span>
+                      )}
                     </div>
                     {!imported && (
                       <div className="song-tags">
@@ -131,6 +151,16 @@ export function LibraryPage(props: Props) {
                       </div>
                     )}
                     <div className="song-actions">
+                      {votes && !imported && (
+                        <VoteButtons
+                          songId={e.id}
+                          score={votes.scores[e.id]}
+                          mine={votes.mine[e.id]}
+                          canVote={votes.canVote}
+                          onVote={(id, v) => void votes.vote(id, v)}
+                          onNeedAccount={votes.onNeedAccount}
+                        />
+                      )}
                       {imported &&
                         (confirming === e.id ? (
                           <button
@@ -173,6 +203,12 @@ export function LibraryPage(props: Props) {
         </section>
 
         <aside className="lib-side">
+          {onPublish && <PublishForm genres={genres.filter((g) => g !== IMPORTED_GENRE)} onPublish={onPublish} />}
+          {canAskToPublish && (
+            <p className="fine side-note">
+              ¿Quieres compartir tablaturas con todos? <a href="#/cuenta">Pídelo desde tu cuenta</a>.
+            </p>
+          )}
           <section className="card panel">
             <header className="panel-head">
               <h3>Añadir canciones</h3>

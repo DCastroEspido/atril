@@ -1282,6 +1282,164 @@ p {
   width: 64px;
 }
 
+/* ---------- Community: account, votes, publishing ---------- */
+.text-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+textarea.text-input {
+  resize: vertical;
+}
+.text-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 16%, transparent);
+}
+.error {
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 500;
+}
+.account-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 26px 24px 48px;
+  display: grid;
+  gap: 22px;
+}
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+.account-card {
+  max-width: 560px;
+}
+.account-card p {
+  line-height: 1.5;
+}
+.account-card > .text-btn {
+  justify-self: start;
+}
+.signin {
+  display: grid;
+  gap: 10px;
+}
+.signin .row {
+  display: flex;
+  gap: 8px;
+}
+.role-badge {
+  padding: 3px 12px;
+  border-radius: var(--r-pill);
+  font-size: 12.5px;
+  font-weight: 700;
+  background: var(--hover);
+}
+.role-badge[data-role='advanced'] {
+  background: var(--complement);
+  color: var(--on-complement);
+}
+.role-badge[data-role='admin'] {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.request-msg {
+  white-space: normal !important;
+  font-style: italic;
+}
+.rows li[data-hidden] .row-text {
+  opacity: 0.6;
+}
+.votes {
+  display: inline-flex;
+  gap: 4px;
+  margin-right: auto;
+}
+.vote-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 32px;
+  padding: 3px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ink-soft);
+  font: 500 13px var(--font-num);
+}
+.vote-btn svg {
+  width: 15px;
+  height: 15px;
+}
+.vote-btn:hover {
+  background: var(--hover);
+}
+.vote-btn[aria-pressed='true'] {
+  background: var(--complement);
+  border-color: var(--complement);
+  color: var(--on-complement);
+}
+.vote-btn.down[aria-pressed='true'] {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-primary);
+}
+.now .votes {
+  margin-right: 0;
+}
+.uploader {
+  font-size: 12px !important;
+  color: var(--ink-soft);
+}
+.side-note a {
+  color: var(--primary);
+  font-weight: 600;
+}
+.publish-form {
+  display: grid;
+  gap: 10px;
+}
+.publish-form label {
+  display: grid;
+  gap: 4px;
+}
+.publish-form .two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.publish-form .select {
+  width: 100%;
+  min-height: 40px;
+  border-radius: var(--r-sm);
+}
+.publish-form .check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.publish-form .check input {
+  margin-top: 2px;
+  accent-color: var(--primary);
+}
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+
 /* ---------- Full screen: only the tab and play ---------- */
 .full-btn {
   min-height: 30px;
@@ -1455,7 +1613,8 @@ p {
   .toast {
     bottom: calc(96px + env(safe-area-inset-bottom, 0px));
   }
-  .library-page {
+  .library-page,
+  .account-page {
     padding: 18px 16px 32px;
   }
   .lib-side {

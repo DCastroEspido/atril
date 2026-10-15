@@ -49,6 +49,18 @@ export default defineConfig({
         globIgnores: ['font/Bravura.svg'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallback: `${base}index.html`,
+        // Shared songs from the community library: keep each file once opened, so it plays offline.
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.includes('/storage/v1/object/public/tabs/'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'shared-tabs',
+              expiration: { maxEntries: 300 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
     }),
   ],

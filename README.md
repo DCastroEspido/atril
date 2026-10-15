@@ -66,6 +66,8 @@ src/
     favorites/        favoritas y su selector
     player/           controlador de alphaTab y la interfaz del reproductor
     import/           lectura de archivos Guitar Pro / MusicXML, arrastrar y soltar
+    account/          sesión, página de cuenta y panel de admin
+    community/        canciones compartidas, votos y llamadas al servidor (Supabase)
   storage/            preferencias (localStorage) y archivos importados (IndexedDB)
   pwa/                aviso de versión nueva e instalación
   ui/                 iconos y avisos
@@ -86,6 +88,52 @@ reproducción va aparte porque cambia muchas veces por segundo.
    pista pide dos notas en la misma cuerda y que las secciones están marcadas.
 
 Incluye solo música de dominio público o propia.
+
+## Biblioteca compartida (opcional)
+
+Con un proyecto de [Supabase](https://supabase.com) configurado, Atril tiene cuentas y una biblioteca
+común. Sin él (variables vacías), funciona como antes: todo se queda en el navegador.
+
+| Quién      | Qué puede hacer                                                                        |
+| ---------- | -------------------------------------------------------------------------------------- |
+| Sin cuenta | Ver y tocar el catálogo y las canciones compartidas, ver los votos                     |
+| Básico     | Lo anterior, favoritas en todos sus dispositivos, votar tablaturas, pedir ser avanzado |
+| Avanzado   | Lo anterior y compartir tablaturas con todos                                           |
+| Admin      | Lo anterior, aprobar solicitudes, ocultar o borrar canciones compartidas               |
+
+Se entra sin contraseña, con un enlace al correo. Las reglas viven en la base de datos (row level
+security en `supabase/migrations/`), no en la app: aunque alguien manipule el navegador, no puede
+saltárselas.
+
+### En local
+
+Requiere Docker.
+
+```sh
+supabase start            # base de datos, auth, almacenamiento y un buzón de correo de pruebas
+supabase db reset         # aplica las migraciones
+npm run test:db           # comprueba los permisos de cada tipo de usuario
+```
+
+`.env.local` (no se sube al repo) apunta la app al Supabase local. Los correos de acceso llegan al
+buzón de pruebas en http://127.0.0.1:54324.
+
+### En producción
+
+1. Crear un proyecto en Supabase y enlazarlo: `supabase link --project-ref <ref>`.
+2. Subir el esquema: `supabase db push`.
+3. En Authentication → URL Configuration, poner como Site URL `https://dcastroespido.github.io/atril/`
+   y añadirla a las Redirect URLs.
+4. Configurar un SMTP propio (Resend, Brevo…) en Authentication → SMTP: el envío de correo incluido en
+   el plan gratuito solo manda unos pocos enlaces por hora.
+5. En GitHub → Settings → Secrets and variables → Actions → Variables, crear `SUPABASE_URL` y
+   `SUPABASE_ANON_KEY` (la clave anon es pública por diseño) y volver a desplegar.
+6. Entrar una vez en Atril con tu correo y hacerte admin desde el SQL editor:
+   `update public.profiles set role = 'admin' where id = (select id from auth.users where email = '…');`
+
+Las tablaturas compartidas son públicas: cualquiera puede verlas y descargarlas. Al publicar, Atril pide
+confirmar que la tablatura es propia, de dominio público o con permiso, y el admin puede ocultarla o
+borrarla.
 
 ## Despliegue
 

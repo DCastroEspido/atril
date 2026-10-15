@@ -1,4 +1,6 @@
 import { StarIcon, StarOutlineIcon } from '../../ui/icons';
+import type { VotesState } from '../community/types';
+import { VoteButtons } from '../community/VoteButtons';
 import type { LibraryEntry } from '../library/types';
 import { usePlayer, usePlayerState } from './PlayerContext';
 
@@ -6,10 +8,11 @@ interface Props {
   entry: LibraryEntry | undefined;
   favorite: boolean;
   onToggleFavorite: () => void;
+  votes: VotesState | null;
 }
 
 /** What is on the stand: record label, title and the facts a player checks first. */
-export function NowPlaying({ entry, favorite, onToggleFavorite }: Props) {
+export function NowPlaying({ entry, favorite, onToggleFavorite, votes }: Props) {
   const { score, playing } = usePlayerState(usePlayer())!;
   const first = score?.masterBars[0];
   const facts: [string, string][] = [
@@ -34,6 +37,16 @@ export function NowPlaying({ entry, favorite, onToggleFavorite }: Props) {
           </div>
         ))}
       </dl>
+      {votes && entry && entry.source.kind !== 'file' && (
+        <VoteButtons
+          songId={entry.id}
+          score={votes.scores[entry.id]}
+          mine={votes.mine[entry.id]}
+          canVote={votes.canVote}
+          onVote={(id, v) => void votes.vote(id, v)}
+          onNeedAccount={votes.onNeedAccount}
+        />
+      )}
       <button
         className="icon-btn fav"
         aria-pressed={favorite}

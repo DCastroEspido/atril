@@ -2,6 +2,11 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 import { hrefFor, type Page } from './app/routes';
 import { useRoute } from './app/useRoute';
 import { CATALOG } from './catalog';
+import { useAccount } from './features/account/AccountContext';
+import { AccountPage } from './features/account/AccountPage';
+import { publishSong } from './features/community/api';
+import { useSharedSongs } from './features/community/useSharedSongs';
+import { useVotes } from './features/community/useVotes';
 import { FavoritesCard } from './features/favorites/FavoritesCard';
 import { useFavorites } from './features/favorites/useFavorites';
 import { fetchScore, ScoreUrlError } from './features/import/fetchScore';
@@ -17,9 +22,10 @@ import { SectionsCard } from './features/player/SectionsCard';
 import { Toolkit } from './features/player/Toolkit';
 import { UpdateBanner } from './pwa/UpdateBanner';
 import { useInstallPrompt } from './pwa/useInstallPrompt';
+import { supabase } from './lib/supabase';
 import { readPref, writePref } from './storage/prefs';
 import type { StoredScore } from './storage/scoreFiles';
-import { InstallIcon, NoteIcon, ShelfIcon } from './ui/icons';
+import { InstallIcon, NoteIcon, ShelfIcon, UserIcon } from './ui/icons';
 import { ThemePicker } from './ui/ThemePicker';
 import { useToast } from './ui/Toast';
 
@@ -27,7 +33,10 @@ const DEFAULT_VIEW: ScoreView = { layout: 'line', notation: 'tab' };
 
 export function App() {
   const toast = useToast();
-  const library = useLibrary();
+  const account = useAccount();
+  const { songs: shared, refresh: refreshShared } = useSharedSongs();
+  const library = useLibrary(shared);
+  const votes = useVotes();
   const { favorites, toggle: toggleFavorite, remove: removeFavorite } = useFavorites();
   const install = useInstallPrompt();
   const [player, setPlayer] = useState<PlayerController | null>(null);
@@ -58,24 +67,31 @@ export function App() {
   // Depends on plain values so re-listing the library does not reload the song.
   const tex = current?.source.kind === 'tex' ? current.source.tex : null;
   const isFile = current?.source.kind === 'file';
-  const { getBytes } = library;
+  const remoteUrl = current?.source.kind === 'remote' ? current.source.url : null;
+  const { getBytes, fetchRemote } = library;
   useEffect(() => {
     if (!player) return;
     if (tex) {
       player.loadTex(tex);
       return;
     }
-    if (!isFile) return;
+    if (!isFile && !remoteUrl) return;
     let cancelled = false;
-    getBytes(currentId).then((bytes) => {
+    const bytes = remoteUrl ? fetchRemote(remoteUrl).catch(() => undefined) : getBytes(currentId);
+    bytes.then((data) => {
       if (cancelled) return;
-      if (bytes) player.loadBytes(new Uint8Array(bytes));
-      else toast('No encuentro ese archivo en este navegador.');
+      if (data) player.loadBytes(new Uint8Array(data));
+      else
+        toast(
+          remoteUrl
+            ? 'No he podido descargar esa canción. ¿Tienes conexión?'
+            : 'No encuentro ese archivo en este navegador.',
+        );
     });
     return () => {
       cancelled = true;
     };
-  }, [player, tex, isFile, currentId, getBytes, toast]);
+  }, [player, tex, isFile, remoteUrl, currentId, getBytes, fetchRemote, toast]);
 
   const addScore = useCallback(
     async (score: StoredScore) => {
@@ -114,6 +130,28 @@ export function App() {
     [addScore],
   );
 
+  const publish = useCallback(
+    async (file: { bytes: ArrayBuffer; name: string }, meta: Parameters<typeof publishSong>[3]) => {
+      const userId = account.session?.user.id;
+      if (!supabase || !userId) return 'Entra con tu cuenta para compartir.';
+      try {
+        const song = await publishSong(supabase, userId, file, meta);
+        await refreshShared();
+        toast(`«${song.title}» ya está en la biblioteca para todos`);
+        open(song.id);
+        return null;
+      } catch {
+        return 'No he podido publicarla. Revisa la conexión e inténtalo de nuevo.';
+      }
+    },
+    [account.session, refreshShared, toast, open],
+  );
+
+  const needAccount = useCallback(() => {
+    toast('Entra con tu cuenta para votar');
+    go('account');
+  }, [toast, go]);
+
   useFileArrivals(importFile);
 
   const deleteFile = useCallback(
@@ -140,6 +178,7 @@ export function App() {
         [
           ['practice', 'Practicar', NoteIcon],
           ['library', 'Biblioteca', ShelfIcon],
+          ...(account.enabled ? [['account', account.session ? 'Cuenta' : 'Entrar', UserIcon]] : []),
         ] as [Page, string, typeof NoteIcon][]
       ).map(([to, label, Icon]) => (
         <a key={to} href={hrefFor(to)} aria-current={page === to ? 'page' : undefined}>
@@ -173,6 +212,7 @@ export function App() {
             entry={current}
             favorite={favorites.includes(currentId)}
             onToggleFavorite={() => toggleFavorite(currentId)}
+            votes={account.enabled ? { ...votes, onNeedAccount: needAccount } : null}
           />,
         )}
         <PlayerCard
@@ -203,7 +243,12 @@ export function App() {
         onImport={importFile}
         onOpenLink={openLink}
         onDelete={deleteFile}
+        votes={account.enabled ? { ...votes, onNeedAccount: needAccount } : null}
+        onPublish={account.canPublish ? publish : null}
+        canAskToPublish={account.enabled && account.profile?.role === 'basic'}
       />
+
+      <AccountPage active={page === 'account'} shared={shared} onSharedChange={() => void refreshShared()} />
 
       {nav('menu-bottom')}
       <UpdateBanner />

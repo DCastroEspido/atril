@@ -20,7 +20,9 @@ export function searchLibrary(entries: LibraryEntry[], { query, genre, level }: 
   return entries.filter((e) => {
     if (genre && e.genre !== genre) return false;
     if (level && e.level !== level) return false;
-    const haystack = normalize([e.title, e.artist, e.genre, e.level, e.key, e.timeLabel, ...e.tags].join(' '));
+    const haystack = normalize(
+      [e.title, e.artist, e.genre, e.level, e.key, e.timeLabel, e.uploader, ...e.tags].join(' '),
+    );
     return words.every((w) => haystack.includes(w));
   });
 }

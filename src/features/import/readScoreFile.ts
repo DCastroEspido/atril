@@ -20,3 +20,15 @@ export function scoreFromBytes(bytes: ArrayBuffer, fileName: string): StoredScor
 export async function readScoreFile(file: File): Promise<StoredScore> {
   return scoreFromBytes(await file.arrayBuffer(), file.name);
 }
+
+/** What a file says about itself, to prefill the publish form. */
+export function scoreMeta(bytes: ArrayBuffer) {
+  const score = importer.ScoreLoader.loadScoreFromBytes(new Uint8Array(bytes), new Settings());
+  const first = score.masterBars[0];
+  return {
+    title: score.title,
+    artist: score.artist,
+    tempo: score.tempo,
+    timeLabel: first ? `${first.timeSignatureNumerator}/${first.timeSignatureDenominator}` : '',
+  };
+}

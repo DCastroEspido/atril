@@ -1,4 +1,4 @@
-import { AlphaTabApi, LayoutMode, StaveProfile, synth, type model } from '@coderline/alphatab';
+import { AlphaTabApi, importer, LayoutMode, StaveProfile, synth, type model } from '@coderline/alphatab';
 import { barAtTick, clampBars, rangeBeats } from './scoreNav';
 
 export interface TrackMix {
@@ -64,6 +64,9 @@ const INITIAL: PlayerState = {
 
 type Listener = () => void;
 
+/** Whether a track has a tablature staff to draw (vocals and piano parts usually do not). */
+const hasTab = (track: model.Track) => track.staves.some((s) => s.isStringed && s.showTablature);
+
 // alphaTab draws to SVG with its own colours; these match --paper-ink and the palette in tokens.css.
 const SCORE_INK = '#4a1f1c';
 const SCORE_INK_SOFT = '#6a2e2a';
@@ -90,6 +93,8 @@ export class PlayerController {
   private readonly positionListeners = new Set<Listener>();
   /** Range to draw again once a re-render (track visibility change) finishes. */
   private rehighlight: { from: number; to: number } | null = null;
+  /** Track shown first for the song being loaded. */
+  private firstTrack = 0;
 
   constructor(container: HTMLElement, scrollElement: HTMLElement, view: ScoreView = INITIAL.view) {
     const base = import.meta.env.BASE_URL;
@@ -170,7 +175,7 @@ export class PlayerController {
       this.set({
         score,
         error: null,
-        mix: score.tracks.map((_, i) => ({ visible: i === 0, mute: false, solo: false, volume: 100 })),
+        mix: score.tracks.map((_, i) => ({ visible: i === this.firstTrack, mute: false, solo: false, volume: 100 })),
       });
     });
     api.renderStarted.on(() => this.set({ rendering: true }));
@@ -243,15 +248,41 @@ export class PlayerController {
     });
   }
 
+  /** "Tab" only works when every track on screen has a tablature staff; otherwise draw notation too. */
+  private profileFor(visible: model.Track[]) {
+    return this.state.view.notation === 'tab' && visible.length > 0 && visible.every(hasTab)
+      ? StaveProfile.Tab
+      : StaveProfile.Default;
+  }
+
+  private setProfile(visible: model.Track[]) {
+    this.api.settings.display.staveProfile = this.profileFor(visible);
+    this.api.updateSettings();
+  }
+
+  /** Catalog songs: the first track is always the guitar. */
   loadTex(tex: string) {
     this.resetForNewSong();
+    this.firstTrack = 0;
+    this.api.settings.display.staveProfile =
+      this.state.view.notation === 'tab' ? StaveProfile.Tab : StaveProfile.Default;
+    this.api.updateSettings();
     this.api.tex(tex, [0]);
   }
 
+  /** Imported and shared files: parse here to start on the first track that has tablature. */
   loadBytes(bytes: Uint8Array) {
     this.resetForNewSong();
-    if (!this.api.load(bytes, [0]))
+    let score: model.Score;
+    try {
+      score = importer.ScoreLoader.loadScoreFromBytes(bytes, this.api.settings);
+    } catch {
       this.set({ rendering: false, error: 'Ese archivo no es una tablatura que sepa abrir.' });
+      return;
+    }
+    this.firstTrack = Math.max(0, score.tracks.findIndex(hasTab));
+    this.setProfile([score.tracks[this.firstTrack]]);
+    this.api.renderScore(score, [this.firstTrack]);
   }
 
   playPause() {
@@ -290,7 +321,12 @@ export class PlayerController {
     const { view, focus, range } = this.state;
     const { display } = this.api.settings;
     display.layoutMode = view.layout === 'line' ? LayoutMode.Horizontal : LayoutMode.Page;
-    display.staveProfile = view.notation === 'tab' ? StaveProfile.Tab : StaveProfile.Default;
+    const { score, mix } = this.state;
+    display.staveProfile = score
+      ? this.profileFor(score.tracks.filter((_, i) => mix[i]?.visible))
+      : view.notation === 'tab'
+        ? StaveProfile.Tab
+        : StaveProfile.Default;
     display.scale = scaleFor(view, focus);
     // The highlight belongs to beats drawn now; draw it again after the new layout.
     if (range) {
@@ -359,7 +395,9 @@ export class PlayerController {
       this.rehighlight = range;
     }
     this.updateMix(index, { visible: visible[index] });
-    this.api.renderTracks(score.tracks.filter((_, i) => visible[i]));
+    const tracks = score.tracks.filter((_, i) => visible[i]);
+    this.setProfile(tracks);
+    this.api.renderTracks(tracks);
     return true;
   }
 

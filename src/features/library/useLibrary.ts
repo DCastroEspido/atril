@@ -8,12 +8,15 @@ import {
   type StoredScore,
   type StoredScoreInfo,
 } from '../../storage/scoreFiles';
-import { fromCatalog, fromFile, type LibraryEntry } from './types';
+import { supabase } from '../../lib/supabase';
+import { fileUrl } from '../community/api';
+import type { SharedSong } from '../community/types';
+import { fromCatalog, fromFile, fromShared, type LibraryEntry } from './types';
 
 const CATALOG_ENTRIES = CATALOG.map(fromCatalog);
 
-/** Catalog songs plus the files imported into this browser. */
-export function useLibrary() {
+/** Catalog songs, songs shared by the community, and the files imported into this browser. */
+export function useLibrary(shared: SharedSong[] = []) {
   const [files, setFiles] = useState<StoredScoreInfo[]>([]);
   const [filesLoaded, setFilesLoaded] = useState(false);
   /** Bytes of files imported this session, so they open even if the browser refuses to store them. */
@@ -26,7 +29,11 @@ export function useLibrary() {
       .finally(() => setFilesLoaded(true));
   }, []);
 
-  const entries: LibraryEntry[] = useMemo(() => [...CATALOG_ENTRIES, ...files.map(fromFile)], [files]);
+  const entries: LibraryEntry[] = useMemo(() => {
+    const db = supabase;
+    const community = db ? shared.map((song) => fromShared(song, fileUrl(db, song.file_path))) : [];
+    return [...CATALOG_ENTRIES, ...community, ...files.map(fromFile)];
+  }, [files, shared]);
 
   /** Stores the file; resolves false when this browser cannot keep it (it still opens this session). */
   const addFile = useCallback(async (score: StoredScore) => {
@@ -52,5 +59,12 @@ export function useLibrary() {
     [],
   );
 
-  return { entries, filesLoaded, addFile, removeFile, getBytes };
+  /** Downloads a shared song's file (the service worker keeps a copy for offline use). */
+  const fetchRemote = useCallback(async (url: string) => {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(String(response.status));
+    return response.arrayBuffer();
+  }, []);
+
+  return { entries, filesLoaded, addFile, removeFile, getBytes, fetchRemote };
 }
