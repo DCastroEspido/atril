@@ -152,15 +152,37 @@ export class PlayerController {
     this.api.metronomeVolume = 0;
     this.api.countInVolume = 0;
     this.wire();
-    // alphaTab always signs the score; keep the credit, but quieter than the music (styled in app.css).
-    this.credit = new MutationObserver(() => {
-      for (const text of container.querySelectorAll('svg text:not(.at-credit)'))
-        if (text.textContent === CREDIT) text.classList.add('at-credit');
-    });
-    this.credit.observe(container, { childList: true, subtree: true });
+    this.surface = new MutationObserver(() => this.tidySurface(container));
+    this.surface.observe(container, { childList: true, subtree: true });
+    this.api.postRenderFinished.on(() => this.tidySurface(container));
   }
 
-  private credit: MutationObserver;
+  private surface: MutationObserver;
+
+  /**
+   * Two touch-ups on what alphaTab draws:
+   *  - In the line layout alphaTab sizes the score without the zoom (display.scale) while it places the
+   *    bars with it, so with any zoom above 1 the last bars fall outside and are never drawn. Widen the
+   *    score to reach its last block of bars.
+   *  - alphaTab always signs the score; keep the credit, but quieter than the music (styled in app.css).
+   */
+  private tidySurface(container: HTMLElement) {
+    const score = container.querySelector<HTMLElement>(':scope > .at-surface');
+    if (score) {
+      let right = 0;
+      for (const block of score.children) {
+        const { left, width } = (block as HTMLElement).style;
+        right = Math.max(right, (parseFloat(left) || 0) + (parseFloat(width) || 0));
+      }
+      if (right > (parseFloat(score.style.width) || 0) + 1) {
+        score.style.width = `${right}px`;
+        const cursors = container.querySelector<HTMLElement>(':scope > .at-cursors');
+        if (cursors) cursors.style.width = `${right}px`;
+      }
+    }
+    for (const text of container.querySelectorAll('svg text:not(.at-credit)'))
+      if (text.textContent === CREDIT) text.classList.add('at-credit');
+  }
 
   getState = (): PlayerState => this.state;
   getPosition = (): Position => this.position;
@@ -444,7 +466,7 @@ export class PlayerController {
   }
 
   destroy() {
-    this.credit.disconnect();
+    this.surface.disconnect();
     this.api.destroy();
     this.listeners.clear();
     this.positionListeners.clear();
